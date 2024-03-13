@@ -1,0 +1,129 @@
+<div class="page">
+  <h1>Program Logs Viewer</h1>
+  <div class="menu">
+    <div class="menu__left">
+      <div class="menu-selector__dropdown">
+        <p>
+          <strong><mat-label>Participant ID</mat-label></strong>
+        </p>
+        <select id="participantid-dropdown" [(ngModel)]="selectedParticipantId" (ngModelChange)="loadParticipantExercises()"  name="participantId">
+          <option default hidden>Select participant</option>
+          <option *ngFor="let participantId of participantIds"
+            [value]="participantId[0]">{{participantId[1]}}
+          </option>
+        </select>
+      </div>
+
+      <p matTooltip="The time that the exercise initially appeared on the subject's screen"
+        [matTooltipShowDelay]="tooltipShowDelay.value"
+        [matTooltipHideDelay]="tooltipHideDelay.value">
+      <strong>Time of starting exercise:</strong> {{timeStartingExerise}}
+      </p>
+
+      <p matTooltip="The time between the exercise initially appearing on the subject's screen and the time of their last run"
+        [matTooltipShowDelay]="tooltipShowDelay.value"
+        [matTooltipHideDelay]="tooltipHideDelay.value">
+      <strong>Total time spent on exercise:</strong> {{timeSpentOnExercise}}
+      </p>
+
+      <p matTooltip="The current run number of the snapshot being displayed"><strong>Run number: </strong> <span *ngIf="currentSnapshotData!.snapshotNumber != undefined && totalSnapshots != undefined">{{currentSnapshotData!.snapshotNumber}} out of {{totalSnapshots}} attempts on exercise</span></p>
+    </div>
+
+    <div class="menu__right">
+      <div class="menu-selector__dropdown">
+        <p>
+          <strong><mat-label>Exercise number</mat-label></strong>
+        </p>
+        <select id="exercise-number-dropdown" [(ngModel)]="selectedExercise" (ngModelChange)="loadSnapshots()" [disabled]="selectedParticipantId == null">
+          <option default hidden>Select exercise</option>
+          <option *ngFor="let exercise of participantExercises"
+            [value]="exercise">Exercise {{exercise}}
+        </option>
+        </select>
+      </div>
+
+      <p matTooltip="The time between the previous and current snapshot."
+        [matTooltipShowDelay]="tooltipShowDelay.value"
+        [matTooltipHideDelay]="tooltipHideDelay.value">
+      <strong>Time between last run: </strong>{{currentSnapshotData!.timeBetweenLastRun}}
+      </p>
+      
+      <p matTooltip="The amount of time the subject has spent on the exercise at the point of the current snapshot."
+        [matTooltipShowDelay]="tooltipShowDelay.value"
+        [matTooltipHideDelay]="tooltipHideDelay.value">
+      <strong>Time spent on exercise "so far": </strong>{{currentSnapshotData!.timeSpentOnExerciseSoFar}}
+      </p>
+
+      <div>
+        <p  matTooltip="Whether the current snapshot was able to run successfully or not."
+          [matTooltipShowDelay]="tooltipShowDelay.value"
+          [matTooltipHideDelay]="tooltipHideDelay.value">
+        <strong>Ran successfully? </strong>
+          <span *ngIf="currentSnapshotData!.codeCompiled && contentLoaded" class="snapshot-metadata-display__ran-successfully--yes">Yes</span>
+          <span *ngIf="!currentSnapshotData!.codeCompiled && contentLoaded" class="snapshot-metadata-display__ran-successfully--no">No</span>
+        </p>
+        <p [style.visibility]="!currentSnapshotData!.codeCompiled && contentLoaded" matTooltip="The error message displayed to the subject if the current snapshot failed to run successfully"><strong>Error message: </strong> <span id="menu__right__error-message--code-font">{{currentSnapshotData!.snapshotErrorMessage}}</span></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-viewer">
+    <app-code-viewer *ngIf="contentLoaded && currentSnapshotData!.currentSnapshotCode != undefined" [codeToDisplay]="currentSnapshotData!.codeToDisplay!" [displayDiffMarkdown]="this.currentSnapshotData!.codeToDisplay! != this.currentSnapshotData!.currentSnapshotCode!">
+    </app-code-viewer>
+    
+    <p *ngIf="didNotAttemptExercise" id="code-viewer__default-messages">
+      Subject did not attempt this exercise. Choose another exercise if you're interested in their progress.
+    </p>
+    <p *ngIf="!contentLoaded" id="code-viewer__default-messages">
+      Pick an exercise to display some code.
+    </p>
+  </div>
+
+  <div class="bottom-display">
+    <p id="bottom-display__identical-snapshots-message"
+      [style.visibility]="(currentSnapshotData == undefined || currentSnapshotData!.codeEqualToPreviousSnapshot == undefined || !currentSnapshotData!.codeEqualToPreviousSnapshot || !displayDiffs) ? 'hidden' : 'visible'">
+      This program is the same as the previous program
+    </p>
+    <div class="bottom-display__navigator-buttons">
+      <button mat-icon-button matTooltip="Hop to first snapshot (shift + left arrow)" aria-label="Move to firt snapshot button with a skip previous icon"
+        [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotData!.snapshotNumber == undefined || currentSnapshotData!.snapshotNumber <= 1"
+        [matTooltipShowDelay]="tooltipShowDelay.value"
+        [matTooltipHideDelay]="tooltipHideDelay.value"
+        (click)="displaySnapshot(1, snapshots!)">
+        <mat-icon>skip_previous</mat-icon>
+      </button>
+      <button mat-icon-button matTooltip="Previous snapshot (left arrow)" aria-label="Previous snapshot button with a left arrow icon"
+        [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotData!.snapshotNumber == undefined || currentSnapshotData!.snapshotNumber <= 1"
+        [matTooltipShowDelay]="tooltipShowDelay.value"
+        [matTooltipHideDelay]="tooltipHideDelay.value"
+        (click)="displaySnapshot(currentSnapshotData!.snapshotNumber! - 1, snapshots!)">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <mat-slide-toggle (change)="toggleDiffs()"
+        matTooltip="Show a comparison of the current and previous snapshot (d)"
+        [(ngModel)]="displayDiffs"
+        [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotData!.snapshotNumber == undefined"
+        [matTooltipShowDelay]="tooltipShowDelay.value"
+        [matTooltipHideDelay]="tooltipHideDelay.value"
+        [color]="matSlideToggleColor">
+        Show Diffs
+      </mat-slide-toggle>
+      <button mat-icon-button matTooltip="Next snapshot (right arrow)" aria-label="Next snapshot button with a right arrow icon"
+        [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotData!.snapshotNumber == undefined || totalSnapshots == undefined || currentSnapshotData!.snapshotNumber == totalSnapshots"
+        [matTooltipShowDelay]="tooltipShowDelay.value"
+        [matTooltipHideDelay]="tooltipHideDelay.value"
+        (click)="displaySnapshot(this.currentSnapshotData!.snapshotNumber! + 1, snapshots)">
+        <mat-icon>arrow_forward</mat-icon>
+      </button>
+      <button mat-icon-button matTooltip="Hop to last snapshot (shift + right arrow)" aria-label="Move to last snapshot button with a skip next icon"
+        [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotData!.snapshotNumber == undefined || totalSnapshots == undefined || currentSnapshotData!.snapshotNumber == totalSnapshots"
+        [matTooltipShowDelay]="tooltipShowDelay.value"
+        [matTooltipHideDelay]="tooltipHideDelay.value"
+        (click)="displaySnapshot(this.totalSnapshots!, snapshots!)">
+        <mat-icon>skip_next</mat-icon>
+    </button>
+    </div>
+  </div>
+</div>
+
+<router-outlet></router-outlet>
