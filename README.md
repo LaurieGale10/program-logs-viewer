@@ -20,7 +20,8 @@ To run the project, run `python app.py` in the root directory and the tool shoul
 - All Python libraries used are located in requirements.txt
 
 ## Usage
-Video of the project at work here
+
+https://github.com/LaurieGale10/program-logs-viewer/assets/60512477/718d0e85-e4f0-4b2d-997b-bceca16cfd6e
 
 The Program Logs Viewer Tool displays the log data for a set of participants (in the case of the original study, lower secondary students) and their attempted exercises. To view the debugging exercises, visit [here](https://github.com/LaurieGale10/debugging-behaviour-study-website). Once a participant ID and exercise is selected, if the participant has ran their program at least once, the state of the code when first pressing run will appear. From there, you can move between runs and observe the changes made between them. To provide more information, temporal data, such as the time between the students' last run, is also displayed, as well as the diffs between a run and its previous run.
 
