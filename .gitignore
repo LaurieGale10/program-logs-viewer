@@ -49,4 +49,5 @@
 #Python virtual environment
 /.venv
 
-#Password file
+#File with pg password
+.env
