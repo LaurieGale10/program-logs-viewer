@@ -1,0 +1,27 @@
+version: "2"
+services:
+  program-logs-server:
+    image: program-logs-server
+    container_name: program-logs-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_USERNAME: "data"
+      DB_PASSWORD: "${DB_PASSWORD}"
+      DB_HOST: program-logs-db
+    ports:
+       - "5000:5000"
+  program-logs-db:
+    image: postgres:16
+    container_name: program-logs-db
+    volumes:
+      - program-logs-data:/var/lib/postgresql/data
+      - ./init_db.sql:/docker-entrypoint-initdb.d/00-init-db.sql:ro
+      - ./sample_data.sql:/docker-entrypoint-initdb.d/99-sample_data.sql:ro
+    environment:
+      POSTGRES_USER: "data"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+volumes:
+  program-logs-data:
+    external: true
