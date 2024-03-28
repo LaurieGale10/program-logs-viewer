@@ -1,49 +1,52 @@
 # compiled output
-/dist
-/tmp
-/out-tsc
+/front-end/dist
+/front-end/tmp
+/front-end/out-tsc
 
 # dependencies
-/node_modules
+/front-end/node_modules
 
 # IDEs and editors
-/.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
+/front-end/.idea
+/front-end/.project
+/front-end/.classpath
+/front-end/.c9/
+/front-end/*.launch
+/front-end/.settings/
+/front-end/*.sublime-workspace
 
 # IDE - VSCode
-.vscode/*
+/front-end/.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 
 # misc
-/.sass-cache
-/connect.lock
-/coverage/*
-/libpeerconnection.log
-npm-debug.log
-testem.log
-/typings
+/front-end/.sass-cache
+/front-end/.angular
+/front-end/connect.lock
+/front-end/coverage/*
+/front-end/libpeerconnection.log
+/front-end/npm-debug.log
+/front-end/testem.log
+/front-end/typings
 
 # e2e
-/e2e/*.js
-/e2e/*.map
+/front-end/e2e/*.js
+/front-end/e2e/*.map
 
 #System Files
-.DS_Store
-Thumbs.db
+/front-end/.DS_Store
+/front-end/Thumbs.db
 
 #Flask build files
-build_dev.py
-/static
-/templates
-__pycache__/
+/front-end/build_dev.py
+/front-end/static
+/front-end/templates
+/__pycache__
 
 #Python virtual environment
-.venv
+/.venv
+
+#Password file
