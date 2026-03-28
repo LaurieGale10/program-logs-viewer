@@ -46,8 +46,13 @@
 /front-end/templates
 /__pycache__
 
-#Python virtual environment
+#Python virtual environment and __pycache__ files
 /.venv
+back-end/__pycache__
 
 #File with pg password
 .env
+
+#Front-end build files
+/static
+/templates
