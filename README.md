@@ -44,3 +44,7 @@ For those interested in analysing programming log data, the format of this data 
 ```
 
 Every keystroke made inside the code editor was also logged but not used for analysis.
+
+## License
+
+This repository is licensed under the terms of the MIT license (see `LICENSE.md`).
