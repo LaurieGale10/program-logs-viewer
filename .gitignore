@@ -41,6 +41,7 @@
 /front-end/Thumbs.db
 
 #Flask build files
+/front-end/build_dev.py
 /front-end/static
 /front-end/templates
 /__pycache__
