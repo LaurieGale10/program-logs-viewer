@@ -5,5 +5,8 @@ CREATE TABLE program_logs (
     exercise_number smallint NOT NULL,
     logs_changes jsonb NOT NULL,
     logs_snapshots jsonb NOT NULL,
-    comments text
+    comments text,
+    memos text,
+    status text,
+    anon_ip text
 );
