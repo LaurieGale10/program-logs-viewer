@@ -1,6 +1,6 @@
 # Build the frontend:
 
-FROM node:20 AS base
+FROM node:26-slim AS base
 
 COPY front-end/ /webapp/
 WORKDIR /webapp
@@ -10,7 +10,7 @@ RUN npm run build
 
 # Then build Python app and copy built frontend in:
 
-FROM python:3.11
+FROM python:3.15.2
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
