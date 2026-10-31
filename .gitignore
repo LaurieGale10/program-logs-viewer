@@ -56,3 +56,8 @@ back-end/__pycache__
 #Front-end build files
 /static
 /templates
+
+# .sql files, except sample_data.sql and init_db.sql
+*.sql
+!sample_data.sql
+!init_db.sql
