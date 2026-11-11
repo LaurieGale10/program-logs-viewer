@@ -15,7 +15,7 @@ Make sure you've installed the most recent versions of the following:
 1. Run Docker Desktop. Make sure it's running Linux containers rather than Windows containers (see [here](https://learn.microsoft.com/en-us/virtualization/windowscontainers/quick-start/quick-start-windows-10-linux) for troublshooting help).
 2. Run `docker volume create program-logs-data`
 3. Run `docker compose up -d`
-4. Visit [http://localhost:500](http://localhost:500) and the Program Logs Viewer should be running.
+4. Visit [http://localhost:5000](http://localhost:5000) and the Program Logs Viewer should be running.
 
 ## Usage
 

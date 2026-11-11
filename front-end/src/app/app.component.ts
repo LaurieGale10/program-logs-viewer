@@ -1,13 +1,22 @@
-import { Component, HostListener, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { Component, HostListener, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { FormControl, FormsModule } from '@angular/forms';
 import { snapshotData } from '../../src/types/types';
 import * as jsdiff from 'diff';
 import { ThemePalette } from '@angular/material/core';
+import { MatLabel } from '@angular/material/select';
+import { MatTooltip } from '@angular/material/tooltip';
+import { CodeViewerComponent } from './code-viewer/code-viewer.component';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [MatLabel, FormsModule, MatTooltip, CodeViewerComponent, MatIconButton, MatIcon, MatSlideToggle, RouterOutlet]
 })
 export class AppComponent implements OnInit {
   tooltipShowDelay = new FormControl(1000);

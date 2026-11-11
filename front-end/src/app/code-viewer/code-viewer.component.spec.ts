@@ -8,8 +8,8 @@ describe('CodeViewerComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [CodeViewerComponent]
-    });
+    imports: [CodeViewerComponent]
+});
     fixture = TestBed.createComponent(CodeViewerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

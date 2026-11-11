@@ -5,7 +5,7 @@ FROM node:26-slim AS base
 COPY front-end/ /webapp/
 WORKDIR /webapp
 
-RUN npm install
+RUN npm ci
 RUN npm run build
 
 # Then build Python app and copy built frontend in:
