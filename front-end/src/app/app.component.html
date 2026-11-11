@@ -28,8 +28,8 @@
         <strong>Total time spent on exercise:</strong> {{timeSpentOnExercise}}
       </p>
 
-      <p matTooltip="The current run number of the snapshot being displayed"><strong>Run number: </strong> @if (currentSnapshotData!.snapshotNumber != undefined && totalSnapshots != undefined) {
-      <span>{{currentSnapshotData!.snapshotNumber}} out of {{totalSnapshots}} attempts on exercise</span>
+      <p matTooltip="The current run number of the snapshot being displayed"><strong>Run number: </strong> @if (currentSnapshot?.snapshotNumber != undefined && totalSnapshots != undefined) {
+      <span>{{currentSnapshot?.snapshotNumber}} out of {{totalSnapshots}} attempts on exercise</span>
     }</p>
   </div>
 
@@ -51,13 +51,13 @@
     <p matTooltip="The time between the previous and current snapshot."
       [matTooltipShowDelay]="tooltipShowDelay.value"
       [matTooltipHideDelay]="tooltipHideDelay.value">
-      <strong>Time between last run: </strong>{{currentSnapshotData!.timeBetweenLastRun}}
+      <strong>Time between last run: </strong>{{currentSnapshot?.timeBetweenLastRun}}
     </p>
 
     <p matTooltip="The amount of time the subject has spent on the exercise at the point of the current snapshot."
       [matTooltipShowDelay]="tooltipShowDelay.value"
       [matTooltipHideDelay]="tooltipHideDelay.value">
-      <strong>Time spent on exercise "so far": </strong>{{currentSnapshotData!.timeSpentOnExerciseSoFar}}
+      <strong>Time spent on exercise "so far": </strong>{{currentSnapshot?.timeSpentOnExerciseSoFar}}
     </p>
 
     <div>
@@ -65,21 +65,21 @@
         [matTooltipShowDelay]="tooltipShowDelay.value"
         [matTooltipHideDelay]="tooltipHideDelay.value">
         <strong>Ran successfully? </strong>
-        @if (currentSnapshotData!.codeCompiled && contentLoaded) {
+        @if (currentSnapshot?.snapshot.compiled && contentLoaded) {
           <span class="snapshot-metadata-display__ran-successfully--yes">Yes</span>
         }
-        @if (!currentSnapshotData!.codeCompiled && contentLoaded) {
+        @if (currentSnapshot && !currentSnapshot.snapshot.compiled && contentLoaded) {
           <span class="snapshot-metadata-display__ran-successfully--no">No</span>
         }
       </p>
-      <p [style.visibility]="!currentSnapshotData!.codeCompiled && contentLoaded ? 'visible' : 'hidden'" matTooltip="The error message displayed to the subject if the current snapshot failed to run successfully"><strong>Error message: </strong> <span id="menu__right__error-message--code-font">{{currentSnapshotData!.snapshotErrorMessage}}</span></p>
+      <p [style.visibility]="currentSnapshot && !currentSnapshot.snapshot.compiled && contentLoaded ? 'visible' : 'hidden'" matTooltip="The error message displayed to the subject if the current snapshot failed to run successfully"><strong>Error message: </strong> <span id="menu__right__error-message--code-font">{{currentSnapshot?.snapshot.error?.error}}</span></p>
     </div>
   </div>
 </div>
 
 <div class="code-viewer">
-  @if (contentLoaded && currentSnapshotData!.currentSnapshotCode != undefined) {
-    <app-code-viewer [codeToDisplay]="currentSnapshotData!.codeToDisplay!" [displayDiffMarkdown]="this.currentSnapshotData!.codeToDisplay! != this.currentSnapshotData!.currentSnapshotCode!">
+  @if (contentLoaded && currentSnapshot != undefined) {
+    <app-code-viewer [codeToDisplay]="currentSnapshot.codeToDisplay" [displayDiffMarkdown]="this.currentSnapshot.codeToDisplay != this.currentSnapshot.snapshot.snapshot">
     </app-code-viewer>
   }
 
@@ -97,42 +97,42 @@
 
 <div class="bottom-display">
   <p id="bottom-display__identical-snapshots-message"
-    [style.visibility]="(currentSnapshotData == undefined || currentSnapshotData!.codeEqualToPreviousSnapshot == undefined || !currentSnapshotData!.codeEqualToPreviousSnapshot || !displayDiffs) ? 'hidden' : 'visible'">
+    [style.visibility]="(!currentSnapshot?.codeEqualToPreviousSnapshot || !displayDiffs) ? 'hidden' : 'visible'">
     This program is the same as the previous program
   </p>
   <div class="bottom-display__navigator-buttons">
     <button mat-icon-button matTooltip="Hop to first snapshot (shift + left arrow)" aria-label="Move to firt snapshot button with a skip previous icon"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotData!.snapshotNumber == undefined || currentSnapshotData!.snapshotNumber <= 1"
+      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshot?.snapshotNumber == undefined || currentSnapshot.snapshotNumber <= 1"
       [matTooltipShowDelay]="tooltipShowDelay.value"
       [matTooltipHideDelay]="tooltipHideDelay.value"
       (click)="displaySnapshot(1, snapshots!)">
       <mat-icon>skip_previous</mat-icon>
     </button>
     <button mat-icon-button matTooltip="Previous snapshot (left arrow)" aria-label="Previous snapshot button with a left arrow icon"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotData!.snapshotNumber == undefined || currentSnapshotData!.snapshotNumber <= 1"
+      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshot?.snapshotNumber == undefined || currentSnapshot.snapshotNumber <= 1"
       [matTooltipShowDelay]="tooltipShowDelay.value"
       [matTooltipHideDelay]="tooltipHideDelay.value"
-      (click)="displaySnapshot(currentSnapshotData!.snapshotNumber! - 1, snapshots!)">
+      (click)="displaySnapshot(currentSnapshot!.snapshotNumber - 1, snapshots!)">
       <mat-icon>arrow_back</mat-icon>
     </button>
     <mat-slide-toggle (change)="toggleDiffs()"
       matTooltip="Show a comparison of the current and previous snapshot (d)"
       [(ngModel)]="displayDiffs"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotData!.snapshotNumber == undefined"
+      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshot?.snapshotNumber == undefined"
       [matTooltipShowDelay]="tooltipShowDelay.value"
       [matTooltipHideDelay]="tooltipHideDelay.value"
       [color]="matSlideToggleColor">
       Show Diffs
     </mat-slide-toggle>
     <button mat-icon-button matTooltip="Next snapshot (right arrow)" aria-label="Next snapshot button with a right arrow icon"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotData!.snapshotNumber == undefined || totalSnapshots == undefined || currentSnapshotData!.snapshotNumber == totalSnapshots"
+      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshot?.snapshotNumber == undefined || totalSnapshots == undefined || currentSnapshot.snapshotNumber == totalSnapshots"
       [matTooltipShowDelay]="tooltipShowDelay.value"
       [matTooltipHideDelay]="tooltipHideDelay.value"
-      (click)="displaySnapshot(this.currentSnapshotData!.snapshotNumber! + 1, snapshots)">
+      (click)="displaySnapshot(this.currentSnapshot!.snapshotNumber + 1, snapshots!)">
       <mat-icon>arrow_forward</mat-icon>
     </button>
     <button mat-icon-button matTooltip="Hop to last snapshot (shift + right arrow)" aria-label="Move to last snapshot button with a skip next icon"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotData!.snapshotNumber == undefined || totalSnapshots == undefined || currentSnapshotData!.snapshotNumber == totalSnapshots"
+      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshot?.snapshotNumber == undefined || totalSnapshots == undefined || currentSnapshot.snapshotNumber == totalSnapshots"
       [matTooltipShowDelay]="tooltipShowDelay.value"
       [matTooltipHideDelay]="tooltipHideDelay.value"
       (click)="displaySnapshot(this.totalSnapshots!, snapshots!)">

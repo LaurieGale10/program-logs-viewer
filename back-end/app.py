@@ -24,14 +24,25 @@ def get_exercise_numbers():
         data = cursor.fetchall()
     return jsonify(data)
 
-"""Gets the list of snapshots (program at a given point in time) for a specific participantId and exercise number."""
+"""Gets exercise attempt data for a specific participantId and exercise number."""
 @app.route('/snapshots', methods = ['GET'])
 def get_snapshots():
     with connection_pool.get_conn_from_pool() as cursor:
-        cursor.execute('SELECT logs_snapshots, date, comments, id FROM program_logs WHERE participantId=%s AND exercise_number=%s;',
+        cursor.execute('SELECT logs_snapshots, logs_changes, date, comments, id FROM program_logs WHERE participantId=%s AND exercise_number=%s;',
         (request.args.get('participantId'), request.args.get('exercise_number')))
-        data = cursor.fetchall()
-    return jsonify(data)
+        row = cursor.fetchone()
+
+    if row is None:
+        return jsonify({"error": "No logs found for the requested participant and exercise"}), 404
+
+    snapshots, changes, date, comments, log_id = row
+    return jsonify({
+        "snapshots": snapshots,
+        "changes": changes,
+        "date": date,
+        "comments": comments,
+        "id": log_id,
+    })
 
 if __name__ == "__main__":
     app.run(debug=True)

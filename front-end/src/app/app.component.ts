@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, FormsModule } from '@angular/forms';
-import { snapshotData } from '../../src/types/types';
+import { CurrentSnapshot, ExerciseAttempt, isExerciseAttempt, ProgramSnapshot } from '../../src/types/types';
 import * as jsdiff from 'diff';
 import { ThemePalette } from '@angular/material/core';
 import { MatLabel } from '@angular/material/select';
@@ -29,21 +29,13 @@ export class AppComponent implements OnInit {
   selectedExercise: number | null = null;
 
   //Snapshot-set data
-  snapshots: any[] | undefined; //TODO: Change to proper JSON type
+  snapshots: ProgramSnapshot[] | undefined;
   totalSnapshots: number | undefined;
   timeStartingExerise: string | undefined;
   timeSpentOnExercise: string | undefined;
   didNotAttemptExercise: boolean | null = null; //TODO: Sort out convention on what is undefined and null
 
-  currentSnapshotData: snapshotData = {
-    currentSnapshotCode: undefined,
-    codeToDisplay: undefined,
-    codeEqualToPreviousSnapshot: undefined,
-    snapshotNumber: undefined,
-    timeBetweenLastRun: undefined,
-    timeSpentOnExerciseSoFar: undefined,
-    codeCompiled: undefined,
-  }
+  currentSnapshot: CurrentSnapshot | undefined;
 
   contentLoaded: boolean = false;
   displayDiffs: boolean = false;
@@ -85,17 +77,27 @@ export class AppComponent implements OnInit {
    * Function that is called once a specific participant is selected, loading the exercises that exists for them in the back-end.
    * Also alters the display of some other UI elements
    */
-  async loadParticipantExercises() {
-    //Reset snapshot-related data for a given participantId and exercise number to remove out-of-date data
-    this.currentSnapshotData = {
-      currentSnapshotCode: undefined,
-      codeToDisplay: undefined,
-      codeEqualToPreviousSnapshot: undefined,
-      snapshotNumber: undefined,
-      timeBetweenLastRun: undefined,
-      timeSpentOnExerciseSoFar: undefined,
-      codeCompiled: undefined,
+  async loadParticipantExercises(): Promise<void> {
+    this.resetExerciseState();
+
+    if (this.selectedParticipantId === null) {
+      return;
     }
+
+    const response = await fetch('/exercise_numbers?' + new URLSearchParams({
+      participantId: this.selectedParticipantId
+    }));
+    if (!response.ok) {
+      throw new Error(`Failed to load exercises: ${response.status} ${response.statusText}`);
+    }
+
+    const exerciseRows: [number][] = await response.json();
+    this.participantExercises = exerciseRows.map(([exerciseNumber]) => exerciseNumber);
+  }
+
+  private resetExerciseState(): void {
+    this.currentSnapshot = undefined;
+    this.snapshots = undefined;
     this.totalSnapshots = undefined;
     this.timeStartingExerise = undefined;
     this.timeSpentOnExercise = undefined;
@@ -104,17 +106,6 @@ export class AppComponent implements OnInit {
     this.selectedExercise = null;
     this.participantExercises = [];
     this.displayDiffs = false;
-
-
-    let response = fetch('/exercise_numbers?' + new URLSearchParams({
-        "participantId": this.selectedParticipantId!
-    }))
-    .then(response => response.json())
-    .then(json => {
-        json.forEach((participantData: number[]) => {
-          this.participantExercises?.push(participantData[0]);
-        });
-    })
   }
 
   /**
@@ -122,30 +113,21 @@ export class AppComponent implements OnInit {
    * @param snapshotNumber Current snapshot number
    * @param snapshots Array containing all snapshots
    */
-  displaySnapshot(snapshotNumber:number, snapshots:any):void {
+  displaySnapshot(snapshotNumber: number, snapshots: ProgramSnapshot[]): void {
     let currentSnapshot = snapshots[snapshotNumber];
 
-    this.currentSnapshotData = {
-      currentSnapshotCode: currentSnapshot["snapshot"],
-      codeToDisplay: currentSnapshot["snapshot"],
-      codeEqualToPreviousSnapshot: currentSnapshot["snapshot"] == this.snapshots![snapshotNumber - 1]["snapshot"],
+    this.currentSnapshot = {
+      snapshot: currentSnapshot,
+      codeToDisplay: currentSnapshot.snapshot,
+      codeEqualToPreviousSnapshot: currentSnapshot.snapshot === this.snapshots![snapshotNumber - 1].snapshot,
       snapshotNumber: snapshotNumber,
       timeBetweenLastRun: this.calculateTimeDifference(snapshots[snapshotNumber - 1]["timestamp"],snapshots[snapshotNumber]["timestamp"]),
       timeSpentOnExerciseSoFar: this.calculateTimeDifference(snapshots[0]["timestamp"],snapshots[snapshotNumber]["timestamp"]),
-      codeCompiled: undefined,
     }
 
     //Update UI elements related to if code "compiled" (ran)
-    if (currentSnapshot["compiled"]) {
-      this.currentSnapshotData.codeCompiled = true;
-    }
-    else {
-      this.currentSnapshotData.codeCompiled = false;
-      this.currentSnapshotData.snapshotErrorMessage = currentSnapshot["error"]["error"];
-    }
-
     if (this.displayDiffs) {
-      this.currentSnapshotData.codeToDisplay = this.convertToDiffs();
+      this.currentSnapshot.codeToDisplay = this.convertToDiffs();
     }
     this.contentLoaded = true;
   }
@@ -154,37 +136,38 @@ export class AppComponent implements OnInit {
    * Loads the snapshot for a given participantId and exercise number, called when a new exercise is selected.
    * //TODO: return some promise as the method is async
    */
-  async loadSnapshots() {
-    let request = await fetch('/snapshots?' + new URLSearchParams({
+  async loadSnapshots(): Promise<void> {
+    const response = await fetch('/snapshots?' + new URLSearchParams({
       "participantId": this.selectedParticipantId!,
       "exercise_number": this.selectedExercise!.toString()
-    }))
-    .then(response => response.json())
-    .then(json => {
-      //Update snapshot-set data
-      this.snapshots = json[0][0]
-      this.totalSnapshots = this.snapshots!.length - 1; //TODO: Implement more error handling
-      if (this.totalSnapshots == 0) {
-        //No snapshot data to display
-        this.currentSnapshotData = {
-          currentSnapshotCode: undefined,
-          codeToDisplay: undefined,
-          codeEqualToPreviousSnapshot: undefined,
-          snapshotNumber: undefined,
-          timeBetweenLastRun: undefined,
-          timeSpentOnExerciseSoFar: undefined,
-          codeCompiled: undefined,
-        }
-        this.didNotAttemptExercise = true;
-        this.contentLoaded = true;
-      }
-      else {
-        this.didNotAttemptExercise = false;
-        this.displaySnapshot(1,this.snapshots);
-      }
-      this.timeStartingExerise = json[0][1];
-      this.timeSpentOnExercise = this.calculateTimeDifference(this.snapshots![0]["timestamp"], this.snapshots![this.totalSnapshots]["timestamp"]);
-    })
+    }));
+    if (!response.ok) {
+      throw new Error(`Failed to load snapshots: ${response.status} ${response.statusText}`);
+    }
+
+    const responseBody: unknown = await response.json();
+    if (!isExerciseAttempt(responseBody)) {
+      throw new Error("The snapshots API returned an invalid exercise attempt");
+    }
+
+    const attempt: ExerciseAttempt = responseBody;
+    this.snapshots = attempt.snapshots;
+    this.totalSnapshots = this.snapshots.length - 1; //TODO: Implement more error handling
+    if (this.totalSnapshots === 0) {
+      //No snapshot data to display
+      this.currentSnapshot = undefined;
+      this.didNotAttemptExercise = true;
+      this.contentLoaded = true;
+    }
+    else {
+      this.didNotAttemptExercise = false;
+      this.displaySnapshot(1, this.snapshots);
+    }
+    this.timeStartingExerise = attempt.date;
+    this.timeSpentOnExercise = this.calculateTimeDifference(
+      this.snapshots[0].timestamp,
+      this.snapshots[this.totalSnapshots].timestamp
+    );
   }
 
   /**
@@ -193,8 +176,12 @@ export class AppComponent implements OnInit {
    * @returns The converted markdown string.
    */
   convertToDiffs(): string {
-    let previousSnapshotCode = this.snapshots![this.currentSnapshotData.snapshotNumber! - 1]["snapshot"];
-    let diff = jsdiff.diffLines(previousSnapshotCode, this.currentSnapshotData.currentSnapshotCode!);
+    if (this.currentSnapshot === undefined || this.snapshots === undefined) {
+      throw new Error("Cannot calculate a diff without a current snapshot");
+    }
+
+    const previousSnapshotCode = this.snapshots[this.currentSnapshot.snapshotNumber - 1].snapshot;
+    const diff = jsdiff.diffLines(previousSnapshotCode, this.currentSnapshot.snapshot.snapshot);
     let outputString = "";
     
     //Iterates through lines of diff string, grouped into added, removed, and unchanged and adds them to a new outputString. +'s and -'s are appended to added and removed lines respectively
@@ -221,11 +208,15 @@ export class AppComponent implements OnInit {
    * When currentSnapshot = 1, displays the diffs between the first snapshot and the original state of the code when the exercise was loaded.
    */
   toggleDiffs() {
-    if (this.displayDiffs && !this.currentSnapshotData.codeEqualToPreviousSnapshot) {
-      this.currentSnapshotData.codeToDisplay = this.convertToDiffs();
+    if (this.currentSnapshot === undefined) {
+      return;
+    }
+
+    if (this.displayDiffs && !this.currentSnapshot.codeEqualToPreviousSnapshot) {
+      this.currentSnapshot.codeToDisplay = this.convertToDiffs();
     }
     else {
-      this.currentSnapshotData.codeToDisplay = this.currentSnapshotData.currentSnapshotCode;
+      this.currentSnapshot.codeToDisplay = this.currentSnapshot.snapshot?.snapshot;
     }
   }
 
@@ -235,17 +226,17 @@ export class AppComponent implements OnInit {
    */
   @HostListener("document:keydown", ["$event"])
   handleSnapshotNavigationKeybinds(event: KeyboardEvent) {
-    if (this.contentLoaded && this.currentSnapshotData!.snapshotNumber != undefined && this.totalSnapshots != undefined) {
+    const currentSnapshot = this.currentSnapshot;
+    if (this.contentLoaded && currentSnapshot !== undefined && this.totalSnapshots != undefined) {
       switch(event.key) {
         case "ArrowLeft":
-          if (this.currentSnapshotData!.snapshotNumber! > 1) {
-            this.displaySnapshot(event.shiftKey ? 1 : this.currentSnapshotData!.snapshotNumber - 1, this.snapshots)
-
+          if (currentSnapshot.snapshotNumber > 1) {
+            this.displaySnapshot(event.shiftKey ? 1 : currentSnapshot.snapshotNumber - 1, this.snapshots!)
           }
           break;
         case "ArrowRight":
-          if (this.currentSnapshotData!.snapshotNumber! < this.totalSnapshots!) {
-            this.displaySnapshot(event.shiftKey ? this.totalSnapshots : this.currentSnapshotData!.snapshotNumber + 1, this.snapshots)
+          if (currentSnapshot.snapshotNumber < this.totalSnapshots) {
+            this.displaySnapshot(event.shiftKey ? this.totalSnapshots : currentSnapshot.snapshotNumber + 1, this.snapshots!)
           }
           break;
       }
@@ -258,7 +249,7 @@ export class AppComponent implements OnInit {
    */
   @HostListener("document:keyup", ["$event"])
     handleToggleDiffKeybinds(event: KeyboardEvent) {
-      if (this.contentLoaded && this.currentSnapshotData!.snapshotNumber != undefined && event.key == "d") {
+        if (this.contentLoaded && this.currentSnapshot !== undefined && event.key == "d") {
         this.displayDiffs = !this.displayDiffs;
         this.toggleDiffs();
       }
