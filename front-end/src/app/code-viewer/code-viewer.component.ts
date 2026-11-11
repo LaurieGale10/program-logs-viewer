@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, Input, OnChanges, SimpleChanges, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { EditorView, basicSetup } from 'codemirror';
 import { EditorState, Extension } from '@codemirror/state';
 import { python } from "@codemirror/lang-python";
@@ -6,9 +6,10 @@ import { StreamLanguage } from "@codemirror/language";
 import { diff } from '@codemirror/legacy-modes/mode/diff';
 
 @Component({
-  selector: 'app-code-viewer',
-  templateUrl: './code-viewer.component.html',
-  styleUrls: ['./code-viewer.component.scss']
+    selector: 'app-code-viewer',
+    templateUrl: './code-viewer.component.html',
+    styleUrls: ['./code-viewer.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager
 })
 export class CodeViewerComponent implements AfterViewInit, OnChanges {
 
