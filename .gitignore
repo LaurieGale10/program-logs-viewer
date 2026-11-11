@@ -4,6 +4,7 @@
 /front-end/out-tsc
 
 # dependencies
+/node_modules/
 /front-end/node_modules
 
 # IDEs and editors
