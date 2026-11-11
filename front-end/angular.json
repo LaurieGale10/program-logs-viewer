@@ -70,7 +70,8 @@
               "buildTarget": "front-end:build:production"
             },
             "development": {
-              "buildTarget": "front-end:build:development"
+              "buildTarget": "front-end:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

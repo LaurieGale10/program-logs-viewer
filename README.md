@@ -37,6 +37,34 @@ docker volume create program-logs-data
 docker compose up -d
 ```
 
+### Development
+
+For hot reloading, run PostgreSQL in Docker and run Flask and Angular locally:
+
+1. Create a `.env` file containing the database password:
+
+   ```
+   DB_PASSWORD=choose-a-local-password
+   ```
+
+2. Install the local dependencies once:
+
+   ```
+   python3 -m venv .venv
+   .venv/bin/pip install -r requirements.txt
+   npm install
+   ```
+
+3. Start the development workflow from the repository root:
+
+   ```
+   npm run dev
+   ```
+
+This starts PostgreSQL in Docker, Flask with debug reloading, and Angular with hot reloading in one terminal. Open [http://localhost:4200](http://localhost:4200). Angular proxies API requests to Flask.
+
+The password in `.env` is used both when PostgreSQL is first initialized and by Flask. Do not commit `.env`. If the database volume was initialized with a different password, recreate it using the commands above before changing the password.
+
 ## Contributing
 Pull requests or suggestions to improve this tool are most welcome! If you'd like to develop some contributions, fork the repo and run `app.py` and whenever you need to rebuild the Angular project, run `ng build --base-href /static/` and copy .js and .css files over to /static and index.html to /templates. This autmotically rebuilds the angular project every 10 seconds, saving you having to manually rebuild every time you make a change.
 
