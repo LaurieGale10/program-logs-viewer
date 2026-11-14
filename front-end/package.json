@@ -23,7 +23,7 @@
     "@codemirror/language": "^6.9.1",
     "@codemirror/legacy-modes": "^6.3.3",
     "codemirror": "^6.0.2",
-    "diff": "^5.1.0",
+    "diff": "^9.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.1"
