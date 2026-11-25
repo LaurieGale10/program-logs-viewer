@@ -19,7 +19,7 @@
       <p matTooltip="The time that the exercise initially appeared on the subject's screen"
         [matTooltipShowDelay]="tooltipShowDelay.value"
         [matTooltipHideDelay]="tooltipHideDelay.value">
-        <strong>Time of starting exercise:</strong> {{timeStartingExerise}}
+        <strong>Time of starting exercise:</strong> {{timeStartingExercise}}
       </p>
 
       <p matTooltip="The time between the exercise initially appearing on the subject's screen and the time of their last run"
@@ -38,7 +38,7 @@
       <p>
         <strong><mat-label>Exercise number</mat-label></strong>
       </p>
-      <select id="exercise-number-dropdown" [(ngModel)]="selectedExercise" (ngModelChange)="loadSnapshots()" [disabled]="selectedParticipantId == null">
+      <select id="exercise-number-dropdown" [(ngModel)]="selectedExercise" (ngModelChange)="loadExerciseAttempt()" [disabled]="selectedParticipantId == null">
         <option default hidden>Select exercise</option>
         @for (exercise of participantExercises; track exercise) {
           <option

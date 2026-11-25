@@ -1,10 +1,17 @@
 import { TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
+import { LoadingService } from './services/loading.service';
 
 describe('AppComponent', () => {
   beforeEach(() => TestBed.configureTestingModule({
-    imports: [RouterTestingModule, AppComponent]
+    imports: [RouterTestingModule, AppComponent],
+    providers: [{
+      provide: LoadingService,
+      useValue: {
+        getParticipants: async () => []
+      }
+    }]
 }));
 
   it('should create the app', () => {

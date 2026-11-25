@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, FormsModule } from '@angular/forms';
-import { CurrentSnapshot, ExerciseAttempt, isExerciseAttempt, ProgramSnapshot } from '../../src/types/types';
+import { CurrentSnapshot, ExerciseAttempt, ProgramSnapshot } from '../../src/types/types';
 import * as jsdiff from 'diff';
 import { ThemePalette } from '@angular/material/core';
 import { MatLabel } from '@angular/material/select';
@@ -10,6 +10,7 @@ import { MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { RouterOutlet } from '@angular/router';
+import { LoadingService } from './services/loading.service';
 
 @Component({
     selector: 'app-root',
@@ -19,6 +20,8 @@ import { RouterOutlet } from '@angular/router';
     imports: [MatLabel, FormsModule, MatTooltip, CodeViewerComponent, MatIconButton, MatIcon, MatSlideToggle, RouterOutlet]
 })
 export class AppComponent implements OnInit {
+  constructor(private readonly loadingService: LoadingService) {}
+
   tooltipShowDelay = new FormControl(1000);
   tooltipHideDelay = new FormControl(0);
   tooltipPosition = new FormControl('below');
@@ -31,7 +34,7 @@ export class AppComponent implements OnInit {
   //Snapshot-set data
   snapshots: ProgramSnapshot[] | undefined;
   totalSnapshots: number | undefined;
-  timeStartingExerise: string | undefined;
+  timeStartingExercise: string | undefined;
   timeSpentOnExercise: string | undefined;
   didNotAttemptExercise: boolean | null = null; //TODO: Sort out convention on what is undefined and null
 
@@ -42,15 +45,11 @@ export class AppComponent implements OnInit {
   matSlideToggleColor: ThemePalette = "primary";
 
   async ngOnInit(): Promise<void> {
-    let displayCount: number = 1;
-    let response = await fetch('/participants')
-    .then(response => response.json())
-    .then(json => {
-        json.forEach((participantId: string) => {
-          this.participantIds?.push([participantId[0], displayCount+". "+participantId[0]])
-          displayCount++;
-        })
-    })
+    const participantIds = await this.loadingService.getParticipants();
+    this.participantIds = participantIds.map((participantId, index) => [
+      participantId,
+      `${index + 1}. ${participantId}`
+    ]);
   }
 
   /**
@@ -84,22 +83,14 @@ export class AppComponent implements OnInit {
       return;
     }
 
-    const response = await fetch('/exercise_numbers?' + new URLSearchParams({
-      participantId: this.selectedParticipantId
-    }));
-    if (!response.ok) {
-      throw new Error(`Failed to load exercises: ${response.status} ${response.statusText}`);
-    }
-
-    const exerciseRows: [number][] = await response.json();
-    this.participantExercises = exerciseRows.map(([exerciseNumber]) => exerciseNumber);
+    this.participantExercises = await this.loadingService.getExerciseNumbers(this.selectedParticipantId);
   }
 
   private resetExerciseState(): void {
     this.currentSnapshot = undefined;
     this.snapshots = undefined;
     this.totalSnapshots = undefined;
-    this.timeStartingExerise = undefined;
+    this.timeStartingExercise = undefined;
     this.timeSpentOnExercise = undefined;
     this.didNotAttemptExercise = null;
     this.contentLoaded = false;
@@ -133,24 +124,17 @@ export class AppComponent implements OnInit {
   }
 
   /**
-   * Loads the snapshot for a given participantId and exercise number, called when a new exercise is selected.
-   * //TODO: return some promise as the method is async
+   * Loads an exercise attempt for the selected participant and exercise.
    */
-  async loadSnapshots(): Promise<void> {
-    const response = await fetch('/snapshots?' + new URLSearchParams({
-      "participantId": this.selectedParticipantId!,
-      "exercise_number": this.selectedExercise!.toString()
-    }));
-    if (!response.ok) {
-      throw new Error(`Failed to load snapshots: ${response.status} ${response.statusText}`);
+  async loadExerciseAttempt(): Promise<void> {
+    if (this.selectedParticipantId === null || this.selectedExercise === null) {
+      return;
     }
 
-    const responseBody: unknown = await response.json();
-    if (!isExerciseAttempt(responseBody)) {
-      throw new Error("The snapshots API returned an invalid exercise attempt");
-    }
-
-    const attempt: ExerciseAttempt = responseBody;
+    const attempt: ExerciseAttempt = await this.loadingService.getExerciseAttempt(
+      this.selectedParticipantId,
+      this.selectedExercise
+    );
     this.snapshots = attempt.snapshots;
     this.totalSnapshots = this.snapshots.length - 1; //TODO: Implement more error handling
     if (this.totalSnapshots === 0) {
@@ -163,7 +147,7 @@ export class AppComponent implements OnInit {
       this.didNotAttemptExercise = false;
       this.displaySnapshot(1, this.snapshots);
     }
-    this.timeStartingExerise = attempt.date;
+    this.timeStartingExercise = new Date(this.snapshots[0].timestamp).toLocaleString();
     this.timeSpentOnExercise = this.calculateTimeDifference(
       this.snapshots[0].timestamp,
       this.snapshots[this.totalSnapshots].timestamp
