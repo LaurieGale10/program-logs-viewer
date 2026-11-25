@@ -42,6 +42,10 @@
     </button>
   </div>
 
+  <div class="bottom-display__timeline_numbers">
+    <p>{{currentSnapshot?.timeSpentOnExerciseSoFar}} / {{timeSpentOnExercise}}</p>
+  </div>
+
   <mat-slide-toggle
     matTooltip="Show a comparison of the current and previous snapshot (d)"
     [ngModel]="displayDiffs"

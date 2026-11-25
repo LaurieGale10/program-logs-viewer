@@ -7,6 +7,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { ThemePalette } from '@angular/material/core';
 import { CurrentSnapshot } from '../../types/types';
 import { TimelineComponent } from './timeline/timeline.component';
+import { calculateTimeDifference } from '../shared/time-utils';
 
 @Component({
   selector: 'app-playback-controls',
@@ -18,6 +19,8 @@ import { TimelineComponent } from './timeline/timeline.component';
 export class PlaybackControlsComponent {
   @Input() currentSnapshot: CurrentSnapshot | undefined;
   @Input() totalSnapshots: number | undefined;
+  @Input() attemptStartTimestamp: number | undefined;
+  @Input() attemptEndTimestamp: number | undefined;
   @Input() contentLoaded = false;
   @Input() didNotAttemptExercise: boolean | null = null;
   @Input() displayDiffs = false;
@@ -27,4 +30,12 @@ export class PlaybackControlsComponent {
 
   @Output() snapshotNavigation = new EventEmitter<number>();
   @Output() displayDiffsChange = new EventEmitter<boolean>();
+
+  get timeSpentOnExercise(): string | undefined {
+    if (this.attemptStartTimestamp === undefined || this.attemptEndTimestamp === undefined) {
+      return undefined;
+    }
+
+    return calculateTimeDifference(this.attemptStartTimestamp, this.attemptEndTimestamp);
+  }
 }

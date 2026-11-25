@@ -22,12 +22,6 @@
         <strong>Time of starting exercise:</strong> {{timeStartingExercise}}
       </p>
 
-      <p matTooltip="The time between the exercise initially appearing on the subject's screen and the time of their last run"
-        [matTooltipShowDelay]="tooltipShowDelay.value"
-        [matTooltipHideDelay]="tooltipHideDelay.value">
-        <strong>Total time spent on exercise:</strong> {{timeSpentOnExercise}}
-      </p>
-
       <p matTooltip="The current run number of the snapshot being displayed"><strong>Run number: </strong> @if (currentSnapshot?.snapshotNumber != undefined && totalSnapshots != undefined) {
       <span>{{currentSnapshot?.snapshotNumber}} out of {{totalSnapshots}} attempts on exercise</span>
     }</p>
@@ -52,12 +46,6 @@
       [matTooltipShowDelay]="tooltipShowDelay.value"
       [matTooltipHideDelay]="tooltipHideDelay.value">
       <strong>Time between last run: </strong>{{currentSnapshot?.timeBetweenLastRun}}
-    </p>
-
-    <p matTooltip="The amount of time the subject has spent on the exercise at the point of the current snapshot."
-      [matTooltipShowDelay]="tooltipShowDelay.value"
-      [matTooltipHideDelay]="tooltipHideDelay.value">
-      <strong>Time spent on exercise "so far": </strong>{{currentSnapshot?.timeSpentOnExerciseSoFar}}
     </p>
 
     <div>
@@ -98,6 +86,8 @@
 <app-playback-controls
   [currentSnapshot]="currentSnapshot"
   [totalSnapshots]="totalSnapshots"
+  [attemptStartTimestamp]="snapshots?.[0]?.timestamp"
+  [attemptEndTimestamp]="snapshots?.[snapshots.length - 1]?.timestamp"
   [contentLoaded]="contentLoaded"
   [didNotAttemptExercise]="didNotAttemptExercise"
   [displayDiffs]="displayDiffs"

@@ -9,6 +9,7 @@ import { CodeViewerComponent } from './code-viewer/code-viewer.component';
 import { RouterOutlet } from '@angular/router';
 import { LoadingService } from './services/loading.service';
 import { PlaybackControlsComponent } from './playback-controls/playback-controls.component';
+import { calculateTimeDifference } from './shared/time-utils';
 
 @Component({
     selector: 'app-root',
@@ -33,7 +34,6 @@ export class AppComponent implements OnInit {
   snapshots: ProgramSnapshot[] | undefined;
   totalSnapshots: number | undefined;
   timeStartingExercise: string | undefined;
-  timeSpentOnExercise: string | undefined;
   didNotAttemptExercise: boolean | null = null; //TODO: Sort out convention on what is undefined and null
 
   currentSnapshot: CurrentSnapshot | undefined;
@@ -49,26 +49,6 @@ export class AppComponent implements OnInit {
       `${index + 1}. ${participantId}`
     ]);
   }
-
-  /**
-   * Calculates time difference between two timestamps
-   * @param timestamp1 The chronologically earlier timestamp
-   * @param timestamp2 The chronologically later timestamp
-   * @returns String indicating different between timestamps
-   * TODO: Make more general (include ability to include hours), and make more pure (just return difference) and test!!
-   */
-  calculateTimeDifference(timestamp1: number, timestamp2: number):string {
-    if (timestamp1 != null && timestamp2 != null ){
-        let difference = (timestamp2 - timestamp1) / 1000;
-        let minutes = Math.floor(difference / 60);
-        if (minutes == 0) {
-            return difference.toFixed(3)+" seconds";
-        }
-        let seconds = difference - minutes * 60;
-        return minutes+" minutes "+seconds.toFixed(3)+" seconds";
-    }
-    throw new Error("Don't have two timestamps to compare against"); //TODO: Improve error handling here
-}
 
   /**
    * Function that is called once a specific participant is selected, loading the exercises that exists for them in the back-end.
@@ -89,7 +69,6 @@ export class AppComponent implements OnInit {
     this.snapshots = undefined;
     this.totalSnapshots = undefined;
     this.timeStartingExercise = undefined;
-    this.timeSpentOnExercise = undefined;
     this.didNotAttemptExercise = null;
     this.contentLoaded = false;
     this.selectedExercise = null;
@@ -110,8 +89,8 @@ export class AppComponent implements OnInit {
       codeToDisplay: currentSnapshot.snapshot,
       codeEqualToPreviousSnapshot: currentSnapshot.snapshot === this.snapshots![snapshotNumber - 1].snapshot,
       snapshotNumber: snapshotNumber,
-      timeBetweenLastRun: this.calculateTimeDifference(snapshots[snapshotNumber - 1]["timestamp"],snapshots[snapshotNumber]["timestamp"]),
-      timeSpentOnExerciseSoFar: this.calculateTimeDifference(snapshots[0]["timestamp"],snapshots[snapshotNumber]["timestamp"]),
+      timeBetweenLastRun: calculateTimeDifference(snapshots[snapshotNumber - 1]["timestamp"],snapshots[snapshotNumber]["timestamp"]),
+      timeSpentOnExerciseSoFar: calculateTimeDifference(snapshots[0]["timestamp"],snapshots[snapshotNumber]["timestamp"]),
     }
 
     //Update UI elements related to if code "compiled" (ran)
@@ -146,10 +125,6 @@ export class AppComponent implements OnInit {
       this.displaySnapshot(1, this.snapshots);
     }
     this.timeStartingExercise = new Date(this.snapshots[0].timestamp).toLocaleString();
-    this.timeSpentOnExercise = this.calculateTimeDifference(
-      this.snapshots[0].timestamp,
-      this.snapshots[this.totalSnapshots].timestamp
-    );
   }
 
   /**
