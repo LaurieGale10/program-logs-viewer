@@ -104,8 +104,8 @@ function isSelection(value: unknown): boolean {
 export type CurrentSnapshot = {
   snapshot: ProgramSnapshot;
   codeToDisplay: string;
-  codeEqualToPreviousSnapshot: boolean;
+  codeEqualToPreviousSnapshot?: boolean;
   snapshotNumber: number;
-  timeBetweenLastRun: string;
+  timeBetweenLastRun?: string;
   timeSpentOnExerciseSoFar: string;
 };

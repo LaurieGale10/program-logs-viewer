@@ -68,7 +68,6 @@ export class AppComponent implements OnInit {
     this.currentSnapshot = undefined;
     this.snapshots = undefined;
     this.totalSnapshots = undefined;
-    this.timeStartingExercise = undefined;
     this.didNotAttemptExercise = null;
     this.contentLoaded = false;
     this.selectedExercise = null;
@@ -82,19 +81,27 @@ export class AppComponent implements OnInit {
    * @param snapshots Array containing all snapshots
    */
   displaySnapshot(snapshotNumber: number, snapshots: ProgramSnapshot[]): void {
-    let currentSnapshot = snapshots[snapshotNumber];
+    const currentSnapshot = snapshots[snapshotNumber];
+    if (currentSnapshot === undefined) {
+      throw new Error(`Snapshot index ${snapshotNumber} is out of range`);
+    }
+
+    const previousSnapshot = snapshotNumber > 0 ? snapshots[snapshotNumber - 1] : undefined;
 
     this.currentSnapshot = {
       snapshot: currentSnapshot,
       codeToDisplay: currentSnapshot.snapshot,
-      codeEqualToPreviousSnapshot: currentSnapshot.snapshot === this.snapshots![snapshotNumber - 1].snapshot,
+      codeEqualToPreviousSnapshot: previousSnapshot === undefined
+        ? undefined
+        : currentSnapshot.snapshot === previousSnapshot.snapshot,
       snapshotNumber: snapshotNumber,
-      timeBetweenLastRun: calculateTimeDifference(snapshots[snapshotNumber - 1]["timestamp"],snapshots[snapshotNumber]["timestamp"]),
+      timeBetweenLastRun: previousSnapshot === undefined
+        ? undefined
+        : calculateTimeDifference(previousSnapshot.timestamp, currentSnapshot.timestamp),
       timeSpentOnExerciseSoFar: calculateTimeDifference(snapshots[0]["timestamp"],snapshots[snapshotNumber]["timestamp"]),
     }
 
-    //Update UI elements related to if code "compiled" (ran)
-    if (this.displayDiffs) {
+    if (this.displayDiffs && previousSnapshot !== undefined && !this.currentSnapshot.codeEqualToPreviousSnapshot) {
       this.currentSnapshot.codeToDisplay = this.convertToDiffs();
     }
     this.contentLoaded = true;
@@ -113,7 +120,7 @@ export class AppComponent implements OnInit {
       this.selectedExercise
     );
     this.snapshots = attempt.snapshots;
-    this.totalSnapshots = this.snapshots.length - 1; //TODO: Implement more error handling
+    this.totalSnapshots = this.snapshots.length - 1;
     if (this.totalSnapshots === 0) {
       //No snapshot data to display
       this.currentSnapshot = undefined;
@@ -122,9 +129,8 @@ export class AppComponent implements OnInit {
     }
     else {
       this.didNotAttemptExercise = false;
-      this.displaySnapshot(1, this.snapshots);
+      this.displaySnapshot(0, this.snapshots);
     }
-    this.timeStartingExercise = new Date(this.snapshots[0].timestamp).toLocaleString();
   }
 
   /**
@@ -169,7 +175,9 @@ export class AppComponent implements OnInit {
       return;
     }
 
-    if (this.displayDiffs && !this.currentSnapshot.codeEqualToPreviousSnapshot) {
+    if (this.displayDiffs
+      && this.currentSnapshot.snapshotNumber > 0
+      && !this.currentSnapshot.codeEqualToPreviousSnapshot) {
       this.currentSnapshot.codeToDisplay = this.convertToDiffs();
     }
     else {
@@ -198,8 +206,8 @@ export class AppComponent implements OnInit {
     if (this.contentLoaded && currentSnapshot !== undefined && this.totalSnapshots != undefined) {
       switch(event.key) {
         case "ArrowLeft":
-          if (currentSnapshot.snapshotNumber > 1) {
-            this.displaySnapshot(event.shiftKey ? 1 : currentSnapshot.snapshotNumber - 1, this.snapshots!)
+          if (currentSnapshot.snapshotNumber > 0) {
+            this.displaySnapshot(event.shiftKey ? 0 : currentSnapshot.snapshotNumber - 1, this.snapshots!)
           }
           break;
         case "ArrowRight":

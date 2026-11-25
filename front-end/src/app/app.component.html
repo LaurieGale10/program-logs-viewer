@@ -16,15 +16,15 @@
         </select>
       </div>
 
-      <p matTooltip="The time that the exercise initially appeared on the subject's screen"
-        [matTooltipShowDelay]="tooltipShowDelay.value"
-        [matTooltipHideDelay]="tooltipHideDelay.value">
-        <strong>Time of starting exercise:</strong> {{timeStartingExercise}}
-      </p>
-
       <p matTooltip="The current run number of the snapshot being displayed"><strong>Run number: </strong> @if (currentSnapshot?.snapshotNumber != undefined && totalSnapshots != undefined) {
       <span>{{currentSnapshot?.snapshotNumber}} out of {{totalSnapshots}} attempts on exercise</span>
     }</p>
+
+    <p matTooltip="The time between the previous and current snapshot."
+      [matTooltipShowDelay]="tooltipShowDelay.value"
+      [matTooltipHideDelay]="tooltipHideDelay.value">
+      <strong>Time between last run: </strong>{{currentSnapshot?.timeBetweenLastRun}}
+    </p>
   </div>
 
   <div class="menu__right">
@@ -41,12 +41,6 @@
         }
       </select>
     </div>
-
-    <p matTooltip="The time between the previous and current snapshot."
-      [matTooltipShowDelay]="tooltipShowDelay.value"
-      [matTooltipHideDelay]="tooltipHideDelay.value">
-      <strong>Time between last run: </strong>{{currentSnapshot?.timeBetweenLastRun}}
-    </p>
 
     <div>
       <p  matTooltip="Whether the current snapshot was able to run successfully or not."
