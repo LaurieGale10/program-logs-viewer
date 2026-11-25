@@ -1,6 +1,7 @@
 import { Component, HostListener, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, FormsModule } from '@angular/forms';
 import { ExerciseAttempt, ProgramSnapshot, ReplayViewModel } from '../../src/types/types';
+import type { TimelineMarker } from './playback-controls/timeline/timeline.component';
 import * as jsdiff from 'diff';
 import { ThemePalette } from '@angular/material/core';
 import { MatLabel } from '@angular/material/select';
@@ -36,6 +37,7 @@ export class AppComponent implements OnInit {
 
   //Snapshot-set data
   snapshots: ProgramSnapshot[] | undefined;
+  timelineMarkers: TimelineMarker[] = [];
   totalSnapshots: number | undefined;
   timeStartingExercise: string | undefined;
   didNotAttemptExercise: boolean | null = null; //TODO: Sort out convention on what is undefined and null
@@ -111,6 +113,7 @@ export class AppComponent implements OnInit {
   private resetExerciseState(): void {
     this.replayService.clear();
     this.snapshots = undefined;
+    this.timelineMarkers = [];
     this.totalSnapshots = undefined;
     this.didNotAttemptExercise = null;
     this.contentLoaded = false;
@@ -146,6 +149,20 @@ export class AppComponent implements OnInit {
     );
     this.replayService.loadAttempt(attempt);
     this.snapshots = attempt.snapshots;
+    const startTimestamp = attempt.snapshots[0].timestamp;
+    this.timelineMarkers = [
+      ...attempt.snapshots.map(snapshot => ({
+        kind: 'snapshot' as const,
+        elapsedTime: snapshot.timestamp - startTimestamp,
+        successful: snapshot.compiled
+      })),
+      ...attempt.changes.map(change => ({
+        kind: 'change' as const,
+        elapsedTime: change.timestamp - startTimestamp
+      }))
+    ]
+      .filter(marker => marker.elapsedTime >= 0 && marker.elapsedTime <= this.replayService.durationMs())
+      .sort((a, b) => a.elapsedTime - b.elapsedTime);
     this.totalSnapshots = this.snapshots.length - 1;
     if (this.totalSnapshots === 0 && attempt.changes.length === 0) {
       //No snapshot data to display

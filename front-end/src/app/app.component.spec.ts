@@ -11,7 +11,8 @@ describe('AppComponent', () => {
     providers: [{
       provide: LoadingService,
       useValue: {
-        getParticipants: async () => []
+        getParticipants: async () => [],
+        getExerciseAttempt: async () => undefined
       }
     }]
 }));
@@ -76,5 +77,36 @@ describe('AppComponent', () => {
 
     expect(app.currentReplayState?.stateOrigin).toBe('snapshot');
     expect(app.currentReplayState?.timeSincePreviousSnapshot).toBe(150);
+  });
+
+  it('builds timeline markers from snapshot and change timestamps', async () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    const attempt: ExerciseAttempt = {
+      snapshots: [
+        { snapshot: 'start', timestamp: 100, compiled: true },
+        { snapshot: 'next', timestamp: 300, compiled: false }
+      ],
+      changes: [{
+        changes: [5, [0, 'x']],
+        timestamp: 200,
+        annotations: [],
+        selections: []
+      }],
+      date: '',
+      comments: null,
+      id: 1
+    };
+    spyOn(TestBed.inject(LoadingService), 'getExerciseAttempt').and.resolveTo(attempt);
+    app.selectedParticipantId = 'participant';
+    app.selectedExercise = 1;
+
+    await app.loadExerciseAttempt();
+
+    expect(app.timelineMarkers).toEqual([
+      { kind: 'snapshot', elapsedTime: 0, successful: true },
+      { kind: 'change', elapsedTime: 100 },
+      { kind: 'snapshot', elapsedTime: 200, successful: false }
+    ]);
   });
 });

@@ -7,6 +7,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { ThemePalette } from '@angular/material/core';
 import { ReplayViewModel } from '../../types/types';
 import { TimelineComponent } from './timeline/timeline.component';
+import type { TimelineMarker } from './timeline/timeline.component';
 import { calculateTimeDifference } from '../shared/time-utils';
 
 @Component({
@@ -20,6 +21,7 @@ export class PlaybackControlsComponent {
   @Input() currentReplayState: ReplayViewModel | undefined;
   @Input() totalSnapshots: number | undefined;
   @Input() durationMs = 0;
+  @Input() timelineMarkers: TimelineMarker[] = [];
   @Input() isPlaying = false;
   @Input() canSkipToPreviousChange = false;
   @Input() canSkipToNextChange = false;

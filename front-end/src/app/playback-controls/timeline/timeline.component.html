@@ -1,4 +1,4 @@
-<div aria-label="Playback timeline">
+<div class="timeline-container" aria-label="Playback timeline">
   <mat-slider class="playback-slider"
     [disabled]="disabled || durationMs <= 0"
     [min]="0"
@@ -9,4 +9,16 @@
       [ngModel]="elapsedTime"
       (ngModelChange)="seek.emit($event)">
   </mat-slider>
+  <div class="timeline-markers" aria-hidden="true">
+    @for (marker of markers; track $index) {
+      <span
+        class="timeline-marker"
+        [class.timeline-marker--snapshot]="marker.kind === 'snapshot'"
+        [class.timeline-marker--successful]="marker.kind === 'snapshot' && marker.successful"
+        [class.timeline-marker--unsuccessful]="marker.kind === 'snapshot' && !marker.successful"
+        [class.timeline-marker--change]="marker.kind === 'change'"
+        [style.left.%]="markerPosition(marker.elapsedTime)">
+      </span>
+    }
+  </div>
 </div>

@@ -2,6 +2,7 @@
   <app-timeline
     [elapsedTime]="currentReplayState?.elapsedTime ?? 0"
     [durationMs]="durationMs"
+    [markers]="timelineMarkers"
     [disabled]="!contentLoaded || didNotAttemptExercise === true"
     (seek)="timelineSeek.emit($event)">
   </app-timeline>
