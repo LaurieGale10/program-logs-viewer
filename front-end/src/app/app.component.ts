@@ -100,7 +100,6 @@ export class AppComponent implements OnInit {
       timeSincePreviousSnapshot: previousSnapshot === undefined
         ? undefined
         : currentSnapshot.timestamp - previousSnapshot.timestamp,
-      playheadTimestamp: currentSnapshot.timestamp,
       elapsedTime: currentSnapshot.timestamp - snapshots[0].timestamp,
     };
     this.currentReplayState = snapshotState;

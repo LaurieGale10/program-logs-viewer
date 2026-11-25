@@ -110,7 +110,6 @@ function isSelection(value: unknown): boolean {
 export type ReplayViewModel = {
   code: string;
   codeToDisplay: string;
-  playheadTimestamp: number;
   elapsedTime: number;
   timeSincePreviousSnapshot?: number;
 } & (

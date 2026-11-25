@@ -44,7 +44,6 @@ describe('AppComponent', () => {
       snapshotIndex: 0,
       snapshot: snapshots[0],
       code: 'start',
-      playheadTimestamp: 100,
       elapsedTime: 0,
       codeEqualToPreviousSnapshot: undefined,
       timeSincePreviousSnapshot: undefined
