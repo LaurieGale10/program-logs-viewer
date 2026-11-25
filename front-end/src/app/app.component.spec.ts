@@ -2,7 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
 import { LoadingService } from './services/loading.service';
-import { ProgramSnapshot } from '../types/types';
+import { ExerciseAttempt } from '../types/types';
+import { ReplayService } from './services/replay.service';
 
 describe('AppComponent', () => {
   beforeEach(() => TestBed.configureTestingModule({
@@ -31,18 +32,23 @@ describe('AppComponent', () => {
   it('should build replay view state for the starting snapshot', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    const snapshots: ProgramSnapshot[] = [
+    const attempt: ExerciseAttempt = {
+      snapshots: [
       { snapshot: 'start', timestamp: 100, compiled: true },
       { snapshot: 'next', timestamp: 250, compiled: true }
-    ];
-    app.snapshots = snapshots;
+      ],
+      changes: [],
+      date: '',
+      comments: null,
+      id: 1
+    };
 
-    app.displaySnapshot(0, snapshots);
+    TestBed.inject(ReplayService).loadAttempt(attempt);
 
     expect(app.currentReplayState).toEqual(jasmine.objectContaining({
       stateOrigin: 'snapshot',
       snapshotIndex: 0,
-      snapshot: snapshots[0],
+      snapshot: attempt.snapshots[0],
       code: 'start',
       elapsedTime: 0,
       codeEqualToPreviousSnapshot: undefined,
@@ -53,12 +59,20 @@ describe('AppComponent', () => {
   it('records time since the previous snapshot in milliseconds', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    const snapshots: ProgramSnapshot[] = [
+    const attempt: ExerciseAttempt = {
+      snapshots: [
       { snapshot: 'start', timestamp: 100, compiled: true },
       { snapshot: 'next', timestamp: 250, compiled: true }
-    ];
+      ],
+      changes: [],
+      date: '',
+      comments: null,
+      id: 1
+    };
 
-    app.displaySnapshot(1, snapshots);
+    const replayService = TestBed.inject(ReplayService);
+    replayService.loadAttempt(attempt);
+    replayService.seekToSnapshot(1);
 
     expect(app.currentReplayState?.stateOrigin).toBe('snapshot');
     expect(app.currentReplayState?.timeSincePreviousSnapshot).toBe(150);

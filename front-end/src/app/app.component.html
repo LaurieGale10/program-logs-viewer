@@ -64,8 +64,8 @@
 </div>
 
 <div class="code-viewer">
-  @if (contentLoaded && currentReplayState != undefined) {
-    <app-code-viewer [codeToDisplay]="currentReplayState.codeToDisplay" [displayDiffMarkdown]="currentReplayState.codeToDisplay != currentReplayState.code">
+  @if (contentLoaded && !didNotAttemptExercise && currentReplayState != undefined) {
+    <app-code-viewer [codeToDisplay]="codeToDisplay ?? ''" [displayDiffMarkdown]="displayDiffMarkdown">
     </app-code-viewer>
   }
 
@@ -84,12 +84,12 @@
 <app-playback-controls
   [currentReplayState]="currentReplayState"
   [totalSnapshots]="totalSnapshots"
-  [attemptStartTimestamp]="snapshots?.[0]?.timestamp"
-  [attemptEndTimestamp]="snapshots?.[snapshots.length - 1]?.timestamp"
+  [durationMs]="replayDurationMs"
   [contentLoaded]="contentLoaded"
   [didNotAttemptExercise]="didNotAttemptExercise"
   [displayDiffs]="displayDiffs"
   (snapshotNavigation)="navigateToSnapshot($event)"
+  (timelineSeek)="seekToElapsedTime($event)"
   (displayDiffsChange)="onDisplayDiffsChange($event)">
 </app-playback-controls>
 </div>

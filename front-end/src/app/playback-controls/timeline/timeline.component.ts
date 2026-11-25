@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import {MatSliderModule} from '@angular/material/slider';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatSliderModule } from '@angular/material/slider';
 
 
 @Component({
@@ -7,10 +8,12 @@ import {MatSliderModule} from '@angular/material/slider';
   templateUrl: './timeline.component.html',
   styleUrls: ['./timeline.component.scss'],
   changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [MatSliderModule]
+  imports: [FormsModule, MatSliderModule]
 })
 export class TimelineComponent {
-
-  //TODO: Add logic for scaling the timeline to the exercise attempt time
+  @Input() elapsedTime = 0;
+  @Input() durationMs = 0;
+  @Input() disabled = false;
+  @Output() seek = new EventEmitter<number>();
 
 }

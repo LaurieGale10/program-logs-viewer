@@ -1,5 +1,10 @@
 <div class="bottom-display">
-  <app-timeline></app-timeline>
+  <app-timeline
+    [elapsedTime]="currentReplayState?.elapsedTime ?? 0"
+    [durationMs]="durationMs"
+    [disabled]="!contentLoaded || didNotAttemptExercise === true"
+    (seek)="timelineSeek.emit($event)">
+  </app-timeline>
 
   @if (contentLoaded && !didNotAttemptExercise) {
     <div class="bottom-display__timeline_numbers">

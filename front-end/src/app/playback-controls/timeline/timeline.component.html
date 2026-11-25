@@ -1,5 +1,12 @@
 <div aria-label="Playback timeline">
-  <mat-slider class="playback-slider">
-    <input matSliderThumb>
+  <mat-slider class="playback-slider"
+    [disabled]="disabled || durationMs <= 0"
+    [min]="0"
+    [max]="durationMs"
+    [step]="1">
+    <input
+      matSliderThumb
+      [ngModel]="elapsedTime"
+      (ngModelChange)="seek.emit($event)">
   </mat-slider>
 </div>
