@@ -20,6 +20,9 @@ export class PlaybackControlsComponent {
   @Input() currentReplayState: ReplayViewModel | undefined;
   @Input() totalSnapshots: number | undefined;
   @Input() durationMs = 0;
+  @Input() isPlaying = false;
+  @Input() canSkipToPreviousChange = false;
+  @Input() canSkipToNextChange = false;
   @Input() contentLoaded = false;
   @Input() didNotAttemptExercise: boolean | null = null;
   @Input() displayDiffs = false;
@@ -29,6 +32,8 @@ export class PlaybackControlsComponent {
   slideToggleColor: ThemePalette = 'primary';
 
   @Output() snapshotNavigation = new EventEmitter<number>();
+  @Output() changeNavigation = new EventEmitter<'previous' | 'next'>();
+  @Output() playbackToggle = new EventEmitter<void>();
   @Output() timelineSeek = new EventEmitter<number>();
   @Output() displayDiffsChange = new EventEmitter<boolean>();
 

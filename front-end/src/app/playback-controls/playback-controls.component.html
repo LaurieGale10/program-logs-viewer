@@ -28,11 +28,38 @@
       <mat-icon>arrow_back</mat-icon>
     </button>
 
-    <button mat-icon-button matTooltip="Play" aria-label="Play replay with a play icon"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotIndex === undefined || totalSnapshots === undefined || currentSnapshotIndex === totalSnapshots"
+    <button mat-icon-button matTooltip="Previous change" aria-label="Skip to previous code change"
+      [disabled]="!contentLoaded || !canSkipToPreviousChange"
       [matTooltipShowDelay]="tooltipShowDelay"
-      [matTooltipHideDelay]="tooltipHideDelay">
-      <mat-icon>play_arrow</mat-icon>
+      [matTooltipHideDelay]="tooltipHideDelay"
+      (click)="changeNavigation.emit('previous')">
+      <mat-icon>fast_rewind</mat-icon>
+    </button>
+
+    @if (isPlaying) {
+      <button mat-icon-button matTooltip="Pause" aria-label="Pause replay"
+        [disabled]="!contentLoaded"
+        [matTooltipShowDelay]="tooltipShowDelay"
+        [matTooltipHideDelay]="tooltipHideDelay"
+        (click)="playbackToggle.emit()">
+        <mat-icon>pause</mat-icon>
+      </button>
+    } @else {
+      <button mat-icon-button matTooltip="Play" aria-label="Play replay"
+        [disabled]="!contentLoaded || didNotAttemptExercise || durationMs <= 0"
+        [matTooltipShowDelay]="tooltipShowDelay"
+        [matTooltipHideDelay]="tooltipHideDelay"
+        (click)="playbackToggle.emit()">
+        <mat-icon>play_arrow</mat-icon>
+      </button>
+    }
+
+    <button mat-icon-button matTooltip="Next change" aria-label="Skip to next code change"
+      [disabled]="!contentLoaded || !canSkipToNextChange"
+      [matTooltipShowDelay]="tooltipShowDelay"
+      [matTooltipHideDelay]="tooltipHideDelay"
+      (click)="changeNavigation.emit('next')">
+      <mat-icon>fast_forward</mat-icon>
     </button>
 
     <button mat-icon-button matTooltip="Next snapshot (right arrow)" aria-label="Next snapshot button with a right arrow icon"

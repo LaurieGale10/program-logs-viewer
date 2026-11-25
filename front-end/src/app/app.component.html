@@ -85,10 +85,15 @@
   [currentReplayState]="currentReplayState"
   [totalSnapshots]="totalSnapshots"
   [durationMs]="replayDurationMs"
+  [isPlaying]="isPlaying"
+  [canSkipToPreviousChange]="canSkipToPreviousChange"
+  [canSkipToNextChange]="canSkipToNextChange"
   [contentLoaded]="contentLoaded"
   [didNotAttemptExercise]="didNotAttemptExercise"
   [displayDiffs]="displayDiffs"
   (snapshotNavigation)="navigateToSnapshot($event)"
+  (changeNavigation)="navigateToChange($event)"
+  (playbackToggle)="togglePlayback()"
   (timelineSeek)="seekToElapsedTime($event)"
   (displayDiffsChange)="onDisplayDiffsChange($event)">
 </app-playback-controls>

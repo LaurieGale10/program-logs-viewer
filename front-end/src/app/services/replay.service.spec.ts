@@ -66,6 +66,36 @@ describe('ReplayService', () => {
     }));
   });
 
+  it('skips to the changes immediately before and after the current replay position', () => {
+    service.loadAttempt(createAttempt());
+
+    expect(service.canSkipToPreviousChange()).toBeFalse();
+    expect(service.canSkipToNextChange()).toBeTrue();
+
+    service.seekToNextChange();
+    expect(service.viewModel()?.elapsedTime).toBe(100);
+    expect(service.viewModel()?.code).toBe('ab');
+    expect(service.canSkipToPreviousChange()).toBeTrue();
+
+    service.seekToPreviousChange();
+    expect(service.viewModel()?.elapsedTime).toBe(0);
+    expect(service.viewModel()?.code).toBe('a');
+    expect(service.canSkipToPreviousChange()).toBeFalse();
+
+    service.seekToNextChange();
+    expect(service.viewModel()?.elapsedTime).toBe(100);
+
+    service.seekToNextChange();
+    expect(service.viewModel()?.elapsedTime).toBe(200);
+    expect(service.viewModel()?.code).toBe('abc');
+    expect(service.canSkipToPreviousChange()).toBeTrue();
+    expect(service.canSkipToNextChange()).toBeFalse();
+
+    service.seekToPreviousChange();
+    expect(service.viewModel()?.elapsedTime).toBe(100);
+    expect(service.viewModel()?.code).toBe('ab');
+  });
+
   it('clamps elapsed time to the attempt duration', () => {
     service.loadAttempt(createAttempt());
 
@@ -92,6 +122,49 @@ describe('ReplayService', () => {
       code: 'ab',
       elapsedTime: 150
     }));
+  });
+
+  it('advances elapsed time during playback and preserves the position when paused', () => {
+    jasmine.clock().install();
+    const now = spyOn(performance, 'now').and.returnValue(0);
+    try {
+      service.loadAttempt(createAttempt());
+      service.play();
+
+      now.and.returnValue(120);
+      jasmine.clock().tick(16);
+
+      expect(service.isPlaying()).toBeTrue();
+      expect(service.viewModel()?.elapsedTime).toBe(120);
+      expect(service.viewModel()?.code).toBe('ab');
+
+      now.and.returnValue(160);
+      service.pause();
+
+      expect(service.isPlaying()).toBeFalse();
+      expect(service.viewModel()?.elapsedTime).toBe(160);
+      expect(service.viewModel()?.code).toBe('ab');
+    } finally {
+      jasmine.clock().uninstall();
+    }
+  });
+
+  it('pauses automatically when playback reaches the end', () => {
+    jasmine.clock().install();
+    const now = spyOn(performance, 'now').and.returnValue(0);
+    try {
+      service.loadAttempt(createAttempt());
+      service.play();
+
+      now.and.returnValue(400);
+      jasmine.clock().tick(16);
+
+      expect(service.isPlaying()).toBeFalse();
+      expect(service.viewModel()?.elapsedTime).toBe(300);
+      expect(service.viewModel()?.code).toBe('abc');
+    } finally {
+      jasmine.clock().uninstall();
+    }
   });
 
   it('rejects seeking before an attempt has been loaded', () => {

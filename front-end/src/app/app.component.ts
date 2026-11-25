@@ -52,6 +52,18 @@ export class AppComponent implements OnInit {
     return this.replayService.durationMs();
   }
 
+  get isPlaying(): boolean {
+    return this.replayService.isPlaying();
+  }
+
+  get canSkipToPreviousChange(): boolean {
+    return this.replayService.canSkipToPreviousChange();
+  }
+
+  get canSkipToNextChange(): boolean {
+    return this.replayService.canSkipToNextChange();
+  }
+
   get codeToDisplay(): string | undefined {
     const state = this.currentReplayState;
     if (state === undefined) {
@@ -198,6 +210,22 @@ export class AppComponent implements OnInit {
 
   seekToElapsedTime(elapsedTime: number): void {
     this.replayService.seekToElapsedTime(elapsedTime);
+  }
+
+  navigateToChange(direction: 'previous' | 'next'): void {
+    if (direction === 'previous') {
+      this.replayService.seekToPreviousChange();
+    } else {
+      this.replayService.seekToNextChange();
+    }
+  }
+
+  togglePlayback(): void {
+    if (this.replayService.isPlaying()) {
+      this.replayService.pause();
+    } else {
+      this.replayService.play();
+    }
   }
 
   onDisplayDiffsChange(displayDiffs: boolean): void {
