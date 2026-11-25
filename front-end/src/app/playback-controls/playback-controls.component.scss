@@ -1,0 +1,16 @@
+.bottom-display {
+  display: flex;
+  flex-direction: column;
+}
+
+#bottom-display__identical-snapshots-message {
+  align-self: center;
+}
+
+.bottom-display__navigator-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 5%;
+}

@@ -6,18 +6,16 @@ import { ThemePalette } from '@angular/material/core';
 import { MatLabel } from '@angular/material/select';
 import { MatTooltip } from '@angular/material/tooltip';
 import { CodeViewerComponent } from './code-viewer/code-viewer.component';
-import { MatIconButton } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
-import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { RouterOutlet } from '@angular/router';
 import { LoadingService } from './services/loading.service';
+import { PlaybackControlsComponent } from './playback-controls/playback-controls.component';
 
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss'],
     changeDetection: ChangeDetectionStrategy.Eager,
-    imports: [MatLabel, FormsModule, MatTooltip, CodeViewerComponent, MatIconButton, MatIcon, MatSlideToggle, RouterOutlet]
+    imports: [MatLabel, FormsModule, MatTooltip, CodeViewerComponent, PlaybackControlsComponent, RouterOutlet]
 })
 export class AppComponent implements OnInit {
   constructor(private readonly loadingService: LoadingService) {}
@@ -202,6 +200,17 @@ export class AppComponent implements OnInit {
     else {
       this.currentSnapshot.codeToDisplay = this.currentSnapshot.snapshot?.snapshot;
     }
+  }
+
+  navigateToSnapshot(snapshotNumber: number): void {
+    if (this.snapshots !== undefined) {
+      this.displaySnapshot(snapshotNumber, this.snapshots);
+    }
+  }
+
+  onDisplayDiffsChange(displayDiffs: boolean): void {
+    this.displayDiffs = displayDiffs;
+    this.toggleDiffs();
   }
 
   /**

@@ -95,51 +95,15 @@
   }
 </div>
 
-<div class="bottom-display">
-  <p id="bottom-display__identical-snapshots-message"
-    [style.visibility]="(!currentSnapshot?.codeEqualToPreviousSnapshot || !displayDiffs) ? 'hidden' : 'visible'">
-    This program is the same as the previous program
-  </p>
-  <div class="bottom-display__navigator-buttons">
-    <button mat-icon-button matTooltip="Hop to first snapshot (shift + left arrow)" aria-label="Move to firt snapshot button with a skip previous icon"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshot?.snapshotNumber == undefined || currentSnapshot.snapshotNumber <= 1"
-      [matTooltipShowDelay]="tooltipShowDelay.value"
-      [matTooltipHideDelay]="tooltipHideDelay.value"
-      (click)="displaySnapshot(1, snapshots!)">
-      <mat-icon>skip_previous</mat-icon>
-    </button>
-    <button mat-icon-button matTooltip="Previous snapshot (left arrow)" aria-label="Previous snapshot button with a left arrow icon"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshot?.snapshotNumber == undefined || currentSnapshot.snapshotNumber <= 1"
-      [matTooltipShowDelay]="tooltipShowDelay.value"
-      [matTooltipHideDelay]="tooltipHideDelay.value"
-      (click)="displaySnapshot(currentSnapshot!.snapshotNumber - 1, snapshots!)">
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-    <mat-slide-toggle (change)="toggleDiffs()"
-      matTooltip="Show a comparison of the current and previous snapshot (d)"
-      [(ngModel)]="displayDiffs"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshot?.snapshotNumber == undefined"
-      [matTooltipShowDelay]="tooltipShowDelay.value"
-      [matTooltipHideDelay]="tooltipHideDelay.value"
-      [color]="matSlideToggleColor">
-      Show Diffs
-    </mat-slide-toggle>
-    <button mat-icon-button matTooltip="Next snapshot (right arrow)" aria-label="Next snapshot button with a right arrow icon"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshot?.snapshotNumber == undefined || totalSnapshots == undefined || currentSnapshot.snapshotNumber == totalSnapshots"
-      [matTooltipShowDelay]="tooltipShowDelay.value"
-      [matTooltipHideDelay]="tooltipHideDelay.value"
-      (click)="displaySnapshot(this.currentSnapshot!.snapshotNumber + 1, snapshots!)">
-      <mat-icon>arrow_forward</mat-icon>
-    </button>
-    <button mat-icon-button matTooltip="Hop to last snapshot (shift + right arrow)" aria-label="Move to last snapshot button with a skip next icon"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshot?.snapshotNumber == undefined || totalSnapshots == undefined || currentSnapshot.snapshotNumber == totalSnapshots"
-      [matTooltipShowDelay]="tooltipShowDelay.value"
-      [matTooltipHideDelay]="tooltipHideDelay.value"
-      (click)="displaySnapshot(this.totalSnapshots!, snapshots!)">
-      <mat-icon>skip_next</mat-icon>
-    </button>
-  </div>
-</div>
+<app-playback-controls
+  [currentSnapshot]="currentSnapshot"
+  [totalSnapshots]="totalSnapshots"
+  [contentLoaded]="contentLoaded"
+  [didNotAttemptExercise]="didNotAttemptExercise"
+  [displayDiffs]="displayDiffs"
+  (snapshotNavigation)="navigateToSnapshot($event)"
+  (displayDiffsChange)="onDisplayDiffsChange($event)">
+</app-playback-controls>
 </div>
 
 <router-outlet></router-outlet>
