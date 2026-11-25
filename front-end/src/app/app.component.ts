@@ -1,6 +1,6 @@
 import { Component, HostListener, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, FormsModule } from '@angular/forms';
-import { CurrentSnapshot, ExerciseAttempt, ProgramSnapshot } from '../../src/types/types';
+import { ExerciseAttempt, ProgramSnapshot, ReplayViewModel } from '../../src/types/types';
 import * as jsdiff from 'diff';
 import { ThemePalette } from '@angular/material/core';
 import { MatLabel } from '@angular/material/select';
@@ -36,7 +36,7 @@ export class AppComponent implements OnInit {
   timeStartingExercise: string | undefined;
   didNotAttemptExercise: boolean | null = null; //TODO: Sort out convention on what is undefined and null
 
-  currentSnapshot: CurrentSnapshot | undefined;
+  currentReplayState: ReplayViewModel | undefined;
 
   contentLoaded: boolean = false;
   displayDiffs: boolean = false;
@@ -65,7 +65,7 @@ export class AppComponent implements OnInit {
   }
 
   private resetExerciseState(): void {
-    this.currentSnapshot = undefined;
+    this.currentReplayState = undefined;
     this.snapshots = undefined;
     this.totalSnapshots = undefined;
     this.didNotAttemptExercise = null;
@@ -76,35 +76,46 @@ export class AppComponent implements OnInit {
   }
 
   /**
-   * Displays the snapshot-related data for a given snapshot number and list of snapshots
-   * @param snapshotNumber Current snapshot number
+   * Builds display state for a selected snapshot.
+   * @param snapshotIndex Index of the selected snapshot
    * @param snapshots Array containing all snapshots
    */
-  displaySnapshot(snapshotNumber: number, snapshots: ProgramSnapshot[]): void {
-    const currentSnapshot = snapshots[snapshotNumber];
+  displaySnapshot(snapshotIndex: number, snapshots: ProgramSnapshot[]): void {
+    const currentSnapshot = snapshots[snapshotIndex];
     if (currentSnapshot === undefined) {
-      throw new Error(`Snapshot index ${snapshotNumber} is out of range`);
+      throw new Error(`Snapshot index ${snapshotIndex} is out of range`);
     }
 
-    const previousSnapshot = snapshotNumber > 0 ? snapshots[snapshotNumber - 1] : undefined;
+    const previousSnapshot = snapshotIndex > 0 ? snapshots[snapshotIndex - 1] : undefined;
 
-    this.currentSnapshot = {
+    const snapshotState: Extract<ReplayViewModel, { stateOrigin: 'snapshot' }> = {
+      stateOrigin: 'snapshot',
+      snapshotIndex,
       snapshot: currentSnapshot,
+      code: currentSnapshot.snapshot,
       codeToDisplay: currentSnapshot.snapshot,
       codeEqualToPreviousSnapshot: previousSnapshot === undefined
         ? undefined
         : currentSnapshot.snapshot === previousSnapshot.snapshot,
-      snapshotNumber: snapshotNumber,
-      timeBetweenLastRun: previousSnapshot === undefined
+      timeSincePreviousSnapshot: previousSnapshot === undefined
         ? undefined
-        : calculateTimeDifference(previousSnapshot.timestamp, currentSnapshot.timestamp),
-      timeSpentOnExerciseSoFar: calculateTimeDifference(snapshots[0]["timestamp"],snapshots[snapshotNumber]["timestamp"]),
-    }
+        : currentSnapshot.timestamp - previousSnapshot.timestamp,
+      playheadTimestamp: currentSnapshot.timestamp,
+      elapsedTime: currentSnapshot.timestamp - snapshots[0].timestamp,
+    };
+    this.currentReplayState = snapshotState;
 
-    if (this.displayDiffs && previousSnapshot !== undefined && !this.currentSnapshot.codeEqualToPreviousSnapshot) {
-      this.currentSnapshot.codeToDisplay = this.convertToDiffs();
+    if (this.displayDiffs && previousSnapshot !== undefined && !snapshotState.codeEqualToPreviousSnapshot) {
+      snapshotState.codeToDisplay = this.convertToDiffs();
     }
     this.contentLoaded = true;
+  }
+
+  get timeSincePreviousSnapshotDisplay(): string | undefined {
+    const timeSincePreviousSnapshot = this.currentReplayState?.timeSincePreviousSnapshot;
+    return timeSincePreviousSnapshot === undefined
+      ? undefined
+      : calculateTimeDifference(0, timeSincePreviousSnapshot);
   }
 
   /**
@@ -123,7 +134,7 @@ export class AppComponent implements OnInit {
     this.totalSnapshots = this.snapshots.length - 1;
     if (this.totalSnapshots === 0) {
       //No snapshot data to display
-      this.currentSnapshot = undefined;
+      this.currentReplayState = undefined;
       this.didNotAttemptExercise = true;
       this.contentLoaded = true;
     }
@@ -139,12 +150,16 @@ export class AppComponent implements OnInit {
    * @returns The converted markdown string.
    */
   convertToDiffs(): string {
-    if (this.currentSnapshot === undefined || this.snapshots === undefined) {
+    const currentReplayState = this.currentReplayState;
+    if (currentReplayState === undefined
+      || currentReplayState.stateOrigin !== 'snapshot'
+      || currentReplayState.snapshotIndex === 0
+      || this.snapshots === undefined) {
       throw new Error("Cannot calculate a diff without a current snapshot");
     }
 
-    const previousSnapshotCode = this.snapshots[this.currentSnapshot.snapshotNumber - 1].snapshot;
-    const diff = jsdiff.diffLines(previousSnapshotCode, this.currentSnapshot.snapshot.snapshot);
+    const previousSnapshotCode = this.snapshots[currentReplayState.snapshotIndex - 1].snapshot;
+    const diff = jsdiff.diffLines(previousSnapshotCode, currentReplayState.code);
     let outputString = "";
     
     //Iterates through lines of diff string, grouped into added, removed, and unchanged and adds them to a new outputString. +'s and -'s are appended to added and removed lines respectively
@@ -168,20 +183,21 @@ export class AppComponent implements OnInit {
 
   /**
    * Adjusts whether the diffs between the current and previous snapshot are displayed or not.
-   * When currentSnapshot = 1, displays the diffs between the first snapshot and the original state of the code when the exercise was loaded.
+   * The starting snapshot has no previous snapshot to compare against.
    */
   toggleDiffs() {
-    if (this.currentSnapshot === undefined) {
+    const currentReplayState = this.currentReplayState;
+    if (currentReplayState === undefined || currentReplayState.stateOrigin !== 'snapshot') {
       return;
     }
 
     if (this.displayDiffs
-      && this.currentSnapshot.snapshotNumber > 0
-      && !this.currentSnapshot.codeEqualToPreviousSnapshot) {
-      this.currentSnapshot.codeToDisplay = this.convertToDiffs();
+      && currentReplayState.snapshotIndex > 0
+      && !currentReplayState.codeEqualToPreviousSnapshot) {
+      currentReplayState.codeToDisplay = this.convertToDiffs();
     }
     else {
-      this.currentSnapshot.codeToDisplay = this.currentSnapshot.snapshot?.snapshot;
+      currentReplayState.codeToDisplay = currentReplayState.code;
     }
   }
 
@@ -202,17 +218,20 @@ export class AppComponent implements OnInit {
    */
   @HostListener("document:keydown", ["$event"])
   handleSnapshotNavigationKeybinds(event: KeyboardEvent) {
-    const currentSnapshot = this.currentSnapshot;
-    if (this.contentLoaded && currentSnapshot !== undefined && this.totalSnapshots != undefined) {
+    const currentReplayState = this.currentReplayState;
+    if (this.contentLoaded && currentReplayState !== undefined && this.totalSnapshots != undefined) {
+      const currentSnapshotIndex = currentReplayState.stateOrigin === 'snapshot'
+        ? currentReplayState.snapshotIndex
+        : currentReplayState.baseSnapshotIndex;
       switch(event.key) {
         case "ArrowLeft":
-          if (currentSnapshot.snapshotNumber > 0) {
-            this.displaySnapshot(event.shiftKey ? 0 : currentSnapshot.snapshotNumber - 1, this.snapshots!)
+          if (currentSnapshotIndex > 0) {
+            this.displaySnapshot(event.shiftKey ? 0 : currentSnapshotIndex - 1, this.snapshots!)
           }
           break;
         case "ArrowRight":
-          if (currentSnapshot.snapshotNumber < this.totalSnapshots) {
-            this.displaySnapshot(event.shiftKey ? this.totalSnapshots : currentSnapshot.snapshotNumber + 1, this.snapshots!)
+          if (currentSnapshotIndex < this.totalSnapshots) {
+            this.displaySnapshot(event.shiftKey ? this.totalSnapshots : currentSnapshotIndex + 1, this.snapshots!)
           }
           break;
       }
@@ -225,7 +244,7 @@ export class AppComponent implements OnInit {
    */
   @HostListener("document:keyup", ["$event"])
     handleToggleDiffKeybinds(event: KeyboardEvent) {
-        if (this.contentLoaded && this.currentSnapshot !== undefined && event.key == "d") {
+        if (this.contentLoaded && this.currentReplayState?.stateOrigin === 'snapshot' && event.key == "d") {
         this.displayDiffs = !this.displayDiffs;
         this.toggleDiffs();
       }

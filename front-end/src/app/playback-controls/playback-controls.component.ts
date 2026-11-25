@@ -5,7 +5,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ThemePalette } from '@angular/material/core';
-import { CurrentSnapshot } from '../../types/types';
+import { ReplayViewModel } from '../../types/types';
 import { TimelineComponent } from './timeline/timeline.component';
 import { calculateTimeDifference } from '../shared/time-utils';
 
@@ -17,13 +17,14 @@ import { calculateTimeDifference } from '../shared/time-utils';
   imports: [FormsModule, MatIconButton, MatIcon, MatSlideToggle, MatTooltip, TimelineComponent]
 })
 export class PlaybackControlsComponent {
-  @Input() currentSnapshot: CurrentSnapshot | undefined;
+  @Input() currentReplayState: ReplayViewModel | undefined;
   @Input() totalSnapshots: number | undefined;
   @Input() attemptStartTimestamp: number | undefined;
   @Input() attemptEndTimestamp: number | undefined;
   @Input() contentLoaded = false;
   @Input() didNotAttemptExercise: boolean | null = null;
   @Input() displayDiffs = false;
+  
   tooltipShowDelay = 1000;
   tooltipHideDelay = 0;
   slideToggleColor: ThemePalette = 'primary';
@@ -37,5 +38,31 @@ export class PlaybackControlsComponent {
     }
 
     return calculateTimeDifference(this.attemptStartTimestamp, this.attemptEndTimestamp);
+  }
+
+  get elapsedTimeDisplay(): string | undefined {
+    if (this.attemptStartTimestamp === undefined || this.currentReplayState === undefined) {
+      return undefined;
+    }
+
+    return calculateTimeDifference(
+      this.attemptStartTimestamp,
+      this.attemptStartTimestamp + this.currentReplayState.elapsedTime
+    );
+  }
+
+  get currentSnapshotIndex(): number | undefined {
+    if (this.currentReplayState === undefined) {
+      return undefined;
+    }
+
+    return this.currentReplayState.stateOrigin === 'snapshot'
+      ? this.currentReplayState.snapshotIndex
+      : this.currentReplayState.baseSnapshotIndex;
+  }
+
+  get currentSnapshotMatchesPrevious(): boolean {
+    return this.currentReplayState?.stateOrigin === 'snapshot'
+      && this.currentReplayState.codeEqualToPreviousSnapshot === true;
   }
 }

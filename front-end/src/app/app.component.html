@@ -16,14 +16,18 @@
         </select>
       </div>
 
-      <p matTooltip="The current run number of the snapshot being displayed"><strong>Run number: </strong> @if (currentSnapshot?.snapshotNumber != undefined && totalSnapshots != undefined) {
-      <span>{{currentSnapshot?.snapshotNumber}} out of {{totalSnapshots}} attempts on exercise</span>
+      <p matTooltip="The current run number of the snapshot being displayed"><strong>Run number: </strong> @if (currentReplayState?.stateOrigin === 'snapshot' && totalSnapshots != undefined) {
+      @if (currentReplayState.snapshotIndex === 0) {
+        <span>Starting code</span>
+      } @else {
+        <span>{{currentReplayState.snapshotIndex}} out of {{totalSnapshots}} attempts on exercise</span>
+      }
     }</p>
 
-    <p matTooltip="The time between the previous and current snapshot."
+    <p matTooltip="The time since the previous snapshot or checkpoint."
       [matTooltipShowDelay]="tooltipShowDelay.value"
       [matTooltipHideDelay]="tooltipHideDelay.value">
-      <strong>Time between last run: </strong>{{currentSnapshot?.timeBetweenLastRun}}
+      <strong>Time since previous snapshot: </strong>{{timeSincePreviousSnapshotDisplay}}
     </p>
   </div>
 
@@ -47,21 +51,21 @@
         [matTooltipShowDelay]="tooltipShowDelay.value"
         [matTooltipHideDelay]="tooltipHideDelay.value">
         <strong>Ran successfully? </strong>
-        @if (currentSnapshot?.snapshot.compiled && contentLoaded) {
+        @if (currentReplayState?.stateOrigin === 'snapshot' && currentReplayState.snapshot.compiled && contentLoaded) {
           <span class="snapshot-metadata-display__ran-successfully--yes">Yes</span>
         }
-        @if (currentSnapshot && !currentSnapshot.snapshot.compiled && contentLoaded) {
+        @if (currentReplayState?.stateOrigin === 'snapshot' && !currentReplayState.snapshot.compiled && contentLoaded) {
           <span class="snapshot-metadata-display__ran-successfully--no">No</span>
         }
       </p>
-      <p [style.visibility]="currentSnapshot && !currentSnapshot.snapshot.compiled && contentLoaded ? 'visible' : 'hidden'" matTooltip="The error message displayed to the subject if the current snapshot failed to run successfully"><strong>Error message: </strong> <span id="menu__right__error-message--code-font">{{currentSnapshot?.snapshot.error?.error}}</span></p>
+      <p [style.visibility]="currentReplayState?.stateOrigin === 'snapshot' && !currentReplayState.snapshot.compiled && contentLoaded ? 'visible' : 'hidden'" matTooltip="The error message displayed to the subject if the current snapshot failed to run successfully"><strong>Error message: </strong> <span id="menu__right__error-message--code-font">{{currentReplayState?.stateOrigin === 'snapshot' ? currentReplayState.snapshot.error?.error : undefined}}</span></p>
     </div>
   </div>
 </div>
 
 <div class="code-viewer">
-  @if (contentLoaded && currentSnapshot != undefined) {
-    <app-code-viewer [codeToDisplay]="currentSnapshot.codeToDisplay" [displayDiffMarkdown]="this.currentSnapshot.codeToDisplay != this.currentSnapshot.snapshot.snapshot">
+  @if (contentLoaded && currentReplayState != undefined) {
+    <app-code-viewer [codeToDisplay]="currentReplayState.codeToDisplay" [displayDiffMarkdown]="currentReplayState.codeToDisplay != currentReplayState.code">
     </app-code-viewer>
   }
 
@@ -78,7 +82,7 @@
 </div>
 
 <app-playback-controls
-  [currentSnapshot]="currentSnapshot"
+  [currentReplayState]="currentReplayState"
   [totalSnapshots]="totalSnapshots"
   [attemptStartTimestamp]="snapshots?.[0]?.timestamp"
   [attemptEndTimestamp]="snapshots?.[snapshots.length - 1]?.timestamp"

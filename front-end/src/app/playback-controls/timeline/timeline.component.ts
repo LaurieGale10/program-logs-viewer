@@ -9,4 +9,8 @@ import {MatSliderModule} from '@angular/material/slider';
   changeDetection: ChangeDetectionStrategy.Eager,
   imports: [MatSliderModule]
 })
-export class TimelineComponent {}
+export class TimelineComponent {
+
+  //TODO: Add logic for scaling the timeline to the exercise attempt time
+
+}

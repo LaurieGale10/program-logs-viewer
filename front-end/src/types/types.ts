@@ -101,11 +101,29 @@ function isSelection(value: unknown): boolean {
     && selection["head"] >= 0;
 }
 
-export type CurrentSnapshot = {
-  snapshot: ProgramSnapshot;
+/**
+ * Describes the program state and its provenance at a replay position.
+ * elapsedTime is measured in milliseconds from the attempt's starting snapshot.
+ * timeSincePreviousSnapshot is measured in milliseconds from the previous snapshot,
+ * or from the base snapshot when stateOrigin is 'change'. It is undefined at the start.
+ */
+export type ReplayViewModel = {
+  code: string;
   codeToDisplay: string;
-  codeEqualToPreviousSnapshot?: boolean;
-  snapshotNumber: number;
-  timeBetweenLastRun?: string;
-  timeSpentOnExerciseSoFar: string;
-};
+  playheadTimestamp: number;
+  elapsedTime: number;
+  timeSincePreviousSnapshot?: number;
+} & (
+  | {
+      stateOrigin: 'snapshot';
+      snapshotIndex: number;
+      snapshot: ProgramSnapshot;
+      codeEqualToPreviousSnapshot?: boolean;
+    }
+  | {
+      stateOrigin: 'change';
+      changeIndex: number;
+      baseSnapshotIndex: number;
+      change: ProgramChange;
+    }
+);

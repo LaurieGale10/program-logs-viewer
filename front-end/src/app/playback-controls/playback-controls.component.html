@@ -1,46 +1,44 @@
 <div class="bottom-display">
-
   <app-timeline></app-timeline>
-  
+
   @if (contentLoaded && !didNotAttemptExercise) {
     <div class="bottom-display__timeline_numbers">
-      <p>{{currentSnapshot?.timeSpentOnExerciseSoFar}} / {{timeSpentOnExercise}}</p>
+      <p>{{elapsedTimeDisplay}} / {{timeSpentOnExercise}}</p>
     </div>
   }
 
   <div class="bottom-display__navigator-buttons">
     <button mat-icon-button matTooltip="Hop to first snapshot (shift + left arrow)" aria-label="Move to first snapshot button with a skip previous icon"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshot?.snapshotNumber == undefined || currentSnapshot!.snapshotNumber == 0"
+      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotIndex === undefined || currentSnapshotIndex === 0"
       [matTooltipShowDelay]="tooltipShowDelay"
       [matTooltipHideDelay]="tooltipHideDelay"
       (click)="snapshotNavigation.emit(0)">
       <mat-icon>skip_previous</mat-icon>
     </button>
     <button mat-icon-button matTooltip="Previous snapshot (left arrow)" aria-label="Previous snapshot button with a left arrow icon"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshot?.snapshotNumber == undefined || currentSnapshot!.snapshotNumber == 0"
+      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotIndex === undefined || currentSnapshotIndex === 0"
       [matTooltipShowDelay]="tooltipShowDelay"
       [matTooltipHideDelay]="tooltipHideDelay"
-      (click)="snapshotNavigation.emit(currentSnapshot!.snapshotNumber - 1)">
+      (click)="snapshotNavigation.emit(currentSnapshotIndex! - 1)">
       <mat-icon>arrow_back</mat-icon>
     </button>
 
     <button mat-icon-button matTooltip="Play" aria-label="Play replay with a play icon"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshot?.snapshotNumber == undefined || totalSnapshots == undefined || currentSnapshot!.snapshotNumber == totalSnapshots"
+      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotIndex === undefined || totalSnapshots === undefined || currentSnapshotIndex === totalSnapshots"
       [matTooltipShowDelay]="tooltipShowDelay"
-      [matTooltipHideDelay]="tooltipHideDelay"
-      >
+      [matTooltipHideDelay]="tooltipHideDelay">
       <mat-icon>play_arrow</mat-icon>
     </button>
 
     <button mat-icon-button matTooltip="Next snapshot (right arrow)" aria-label="Next snapshot button with a right arrow icon"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshot?.snapshotNumber == undefined || totalSnapshots == undefined || currentSnapshot!.snapshotNumber == totalSnapshots"
+      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotIndex === undefined || totalSnapshots === undefined || currentSnapshotIndex === totalSnapshots"
       [matTooltipShowDelay]="tooltipShowDelay"
       [matTooltipHideDelay]="tooltipHideDelay"
-      (click)="snapshotNavigation.emit(currentSnapshot!.snapshotNumber + 1)">
+      (click)="snapshotNavigation.emit(currentSnapshotIndex! + 1)">
       <mat-icon>arrow_forward</mat-icon>
     </button>
     <button mat-icon-button matTooltip="Hop to last snapshot (shift + right arrow)" aria-label="Move to last snapshot button with a skip next icon"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshot?.snapshotNumber == undefined || totalSnapshots == undefined || currentSnapshot!.snapshotNumber == totalSnapshots"
+      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotIndex === undefined || totalSnapshots === undefined || currentSnapshotIndex === totalSnapshots"
       [matTooltipShowDelay]="tooltipShowDelay"
       [matTooltipHideDelay]="tooltipHideDelay"
       (click)="snapshotNavigation.emit(totalSnapshots!)">
@@ -48,21 +46,21 @@
     </button>
   </div>
 
-  @if (contentLoaded && !didNotAttemptExercise ) {
+  @if (contentLoaded && !didNotAttemptExercise) {
     <mat-slide-toggle
       matTooltip="Show a comparison of the current and previous snapshot (d)"
       [ngModel]="displayDiffs"
       (ngModelChange)="displayDiffsChange.emit($event)"
-      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshot?.snapshotNumber == undefined || currentSnapshot!.snapshotNumber === 0"
+      [disabled]="currentSnapshotIndex === undefined || currentSnapshotIndex === 0"
       [matTooltipShowDelay]="tooltipShowDelay"
       [matTooltipHideDelay]="tooltipHideDelay"
       [color]="slideToggleColor">
       Show Diffs
-    </mat-slide-toggle> 
+    </mat-slide-toggle>
   }
 
   <p id="bottom-display__identical-snapshots-message"
-    [style.visibility]="(currentSnapshot?.codeEqualToPreviousSnapshot && displayDiffs) ? 'visible' : 'hidden'">
+    [style.visibility]="(currentSnapshotMatchesPrevious && displayDiffs) ? 'visible' : 'hidden'">
     This program is the same as the previous program
   </p>
 </div>
