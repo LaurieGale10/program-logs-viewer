@@ -1,6 +1,12 @@
 .bottom-display {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+app-timeline {
+  width: 100%;
 }
 
 #bottom-display__identical-snapshots-message {

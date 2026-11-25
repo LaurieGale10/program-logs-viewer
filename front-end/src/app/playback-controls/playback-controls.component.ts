@@ -6,13 +6,14 @@ import { MatSlideToggle } from '@angular/material/slide-toggle';
 import { MatTooltip } from '@angular/material/tooltip';
 import { ThemePalette } from '@angular/material/core';
 import { CurrentSnapshot } from '../../types/types';
+import { TimelineComponent } from './timeline/timeline.component';
 
 @Component({
   selector: 'app-playback-controls',
   templateUrl: './playback-controls.component.html',
   styleUrls: ['./playback-controls.component.scss'],
   changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [FormsModule, MatIconButton, MatIcon, MatSlideToggle, MatTooltip]
+  imports: [FormsModule, MatIconButton, MatIcon, MatSlideToggle, MatTooltip, TimelineComponent]
 })
 export class PlaybackControlsComponent {
   @Input() currentSnapshot: CurrentSnapshot | undefined;
