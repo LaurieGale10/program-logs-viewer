@@ -1,0 +1,99 @@
+<div class="bottom-display">
+  <app-timeline
+    [elapsedTime]="currentReplayState?.elapsedTime ?? 0"
+    [durationMs]="durationMs"
+    [markers]="timelineMarkers"
+    [disabled]="!contentLoaded || didNotAttemptExercise === true"
+    (seek)="timelineSeek.emit($event)">
+  </app-timeline>
+
+  @if (contentLoaded && !didNotAttemptExercise) {
+    <div class="bottom-display__timeline_numbers">
+      <p>{{elapsedTimeDisplay}} / {{timeSpentOnExercise}}</p>
+    </div>
+  }
+
+  <div class="bottom-display__navigator-buttons">
+    <button mat-icon-button matTooltip="Hop to first snapshot (shift + left arrow)" aria-label="Move to first snapshot button with a skip previous icon"
+      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotIndex === undefined || currentSnapshotIndex === 0"
+      [matTooltipShowDelay]="tooltipShowDelay"
+      [matTooltipHideDelay]="tooltipHideDelay"
+      (click)="snapshotNavigation.emit(0)">
+      <mat-icon>skip_previous</mat-icon>
+    </button>
+    <button mat-icon-button matTooltip="Previous snapshot (left arrow)" aria-label="Previous snapshot button with a left arrow icon"
+      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotIndex === undefined || currentSnapshotIndex === 0"
+      [matTooltipShowDelay]="tooltipShowDelay"
+      [matTooltipHideDelay]="tooltipHideDelay"
+      (click)="snapshotNavigation.emit(currentSnapshotIndex! - 1)">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+
+    <button mat-icon-button matTooltip="Previous change" aria-label="Skip to previous code change"
+      [disabled]="!contentLoaded || !canSkipToPreviousChange"
+      [matTooltipShowDelay]="tooltipShowDelay"
+      [matTooltipHideDelay]="tooltipHideDelay"
+      (click)="changeNavigation.emit('previous')">
+      <mat-icon>fast_rewind</mat-icon>
+    </button>
+
+    @if (isPlaying) {
+      <button mat-icon-button matTooltip="Pause" aria-label="Pause replay"
+        [disabled]="!contentLoaded"
+        [matTooltipShowDelay]="tooltipShowDelay"
+        [matTooltipHideDelay]="tooltipHideDelay"
+        (click)="playbackToggle.emit()">
+        <mat-icon>pause</mat-icon>
+      </button>
+    } @else {
+      <button mat-icon-button matTooltip="Play" aria-label="Play replay"
+        [disabled]="!contentLoaded || didNotAttemptExercise || durationMs <= 0"
+        [matTooltipShowDelay]="tooltipShowDelay"
+        [matTooltipHideDelay]="tooltipHideDelay"
+        (click)="playbackToggle.emit()">
+        <mat-icon>play_arrow</mat-icon>
+      </button>
+    }
+
+    <button mat-icon-button matTooltip="Next change" aria-label="Skip to next code change"
+      [disabled]="!contentLoaded || !canSkipToNextChange"
+      [matTooltipShowDelay]="tooltipShowDelay"
+      [matTooltipHideDelay]="tooltipHideDelay"
+      (click)="changeNavigation.emit('next')">
+      <mat-icon>fast_forward</mat-icon>
+    </button>
+
+    <button mat-icon-button matTooltip="Next snapshot (right arrow)" aria-label="Next snapshot button with a right arrow icon"
+      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotIndex === undefined || totalSnapshots === undefined || currentSnapshotIndex === totalSnapshots"
+      [matTooltipShowDelay]="tooltipShowDelay"
+      [matTooltipHideDelay]="tooltipHideDelay"
+      (click)="snapshotNavigation.emit(currentSnapshotIndex! + 1)">
+      <mat-icon>arrow_forward</mat-icon>
+    </button>
+    <button mat-icon-button matTooltip="Hop to last snapshot (shift + right arrow)" aria-label="Move to last snapshot button with a skip next icon"
+      [disabled]="!contentLoaded || didNotAttemptExercise || currentSnapshotIndex === undefined || totalSnapshots === undefined || currentSnapshotIndex === totalSnapshots"
+      [matTooltipShowDelay]="tooltipShowDelay"
+      [matTooltipHideDelay]="tooltipHideDelay"
+      (click)="snapshotNavigation.emit(totalSnapshots!)">
+      <mat-icon>skip_next</mat-icon>
+    </button>
+  </div>
+
+  @if (contentLoaded && !didNotAttemptExercise) {
+    <mat-slide-toggle
+      matTooltip="Show a comparison of the current and previous snapshot (d)"
+      [ngModel]="displayDiffs"
+      (ngModelChange)="displayDiffsChange.emit($event)"
+      [disabled]="currentSnapshotIndex === undefined || currentSnapshotIndex === 0"
+      [matTooltipShowDelay]="tooltipShowDelay"
+      [matTooltipHideDelay]="tooltipHideDelay"
+      [color]="slideToggleColor">
+      Show Diffs
+    </mat-slide-toggle>
+  }
+
+  <p id="bottom-display__identical-snapshots-message"
+    [style.visibility]="(currentSnapshotMatchesPrevious && displayDiffs) ? 'visible' : 'hidden'">
+    This program is the same as the previous program
+  </p>
+</div>

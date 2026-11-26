@@ -1,0 +1,10 @@
+{
+  "name": "program-logs-viewer-dev",
+  "private": true,
+  "scripts": {
+    "dev": "sh -c 'set -a; [ ! -f .env ] || . ./.env; set +a; docker compose stop program-logs-server >/dev/null 2>&1 || true; docker compose up -d program-logs-db && concurrently --kill-others --names flask,angular \"DB_USERNAME=data DB_HOST=localhost .venv/bin/python -m flask --app back-end/app.py run --debug --port 5000\" \"npm --prefix front-end start\"'"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

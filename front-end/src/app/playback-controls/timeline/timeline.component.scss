@@ -1,0 +1,45 @@
+.timeline-container {
+  position: relative;
+}
+
+.playback-slider {
+  width: 100%;
+}
+
+.timeline-markers {
+  position: absolute;
+  inset: 0 16px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.timeline-marker {
+  position: absolute;
+  box-sizing: border-box;
+  left: 0;
+}
+
+.timeline-marker--snapshot {
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border: 2px solid white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.timeline-marker--successful {
+  background-color: #2e7d32;
+}
+
+.timeline-marker--unsuccessful {
+  background-color: #c62828;
+}
+
+.timeline-marker--change {
+  top: calc(50% + 7px);
+  width: 2px;
+  height: 7px;
+  background-color: #555;
+  transform: translateX(-50%);
+}

@@ -1,0 +1,14 @@
+{
+  "/participants": {
+    "target": "http://localhost:5000",
+    "secure": false
+  },
+  "/exercise_numbers": {
+    "target": "http://localhost:5000",
+    "secure": false
+  },
+  "/snapshots": {
+    "target": "http://localhost:5000",
+    "secure": false
+  }
+}
